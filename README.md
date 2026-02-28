@@ -52,27 +52,18 @@ npm run setup
 此命令会：
 - 安装 npm 依赖
 - 编译 TypeScript 代码
-- 自动配置 VSCode Claude Code 插件
 
-#### 3. 配置 VSCode Claude Code 插件
+#### 3. 加载 MCP 配置
 
-在 VSCode 设置 (`settings.json`) 中添加：
+MCP 配置已在项目 `.vscode/settings.json` 中，使用相对路径：
+- 服务器路径: `${workspaceFolder}/dst-ai-mcp-server/dist/index.js`
+- 同步目录: `${workspaceFolder}/../dst-ai-sync`
 
-```json
-{
-  "mcpServers": {
-    "dst-ai": {
-      "command": "node",
-      "args": ["C:\\Users\\Administrator\\Desktop\\Don't Starve Together ai\\dst-ai-mcp-server\\dist\\index.js"],
-      "env": {
-        "SYNC_DIR": "C:\\Users\\Administrator\\dst-ai-sync"
-      }
-    }
-  }
-}
-```
+**只需重新加载 VSCode 窗口**：
+- 按 `Ctrl+Shift+P`
+- 输入 `Reload Window` 并回车
 
-然后重新加载 VSCode 窗口 (`Ctrl+Shift+P` → `Reload Window`)
+然后在对话中输入 `/mcp` 验证配置
 
 #### 4. 启动系统
 

@@ -18,11 +18,14 @@ npm-debug.log*
 Thumbs.db
 
 # 编辑器
-.vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# VSCode (保留项目配置)
+.vscode/*
+!.vscode/settings.json
 
 # 测试
 coverage/

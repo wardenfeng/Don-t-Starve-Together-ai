@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "dst-ai": {
+      "command": "node",
+      "args": ["${workspaceFolder}/dst-ai-mcp-server/dist/index.js"],
+      "env": {
+        "SYNC_DIR": "${workspaceFolder}/../dst-ai-sync"
+      }
+    }
+  }
+}

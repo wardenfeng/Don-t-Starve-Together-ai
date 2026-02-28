@@ -121,24 +121,20 @@ if (fs.existsSync(mcpSdk)) {
 }
 console.log();
 
-// 7. 检查Claude Desktop配置
-console.log('[7/8] 检查 Claude Desktop 配置...');
-const configDir = process.env.APPDATA ?
-  path.join(process.env.APPDATA, 'Claude') :
-  path.join(process.env.HOME, 'Library', 'Application Support', 'Claude');
+// 7. 检查项目MCP配置
+console.log('[7/8] 检查项目 MCP 配置...');
+const projectSettings = path.join(rootDir, '.vscode', 'settings.json');
+if (fs.existsSync(projectSettings)) {
+  log(true, '项目 .vscode/settings.json 存在');
 
-const configFile = path.join(configDir, 'claude_desktop_config.json');
-if (fs.existsSync(configFile)) {
-  log(true, 'Claude Desktop 配置文件存在');
-
-  const config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
+  const config = JSON.parse(fs.readFileSync(projectSettings, 'utf-8'));
   if (config.mcpServers && config.mcpServers['dst-ai']) {
-    log(true, 'dst-ai MCP 服务器已配置');
+    log(true, 'dst-ai MCP 服务器已配置 (使用相对路径)');
   } else {
-    logInfo('未配置 dst-ai MCP 服务器 (运行 npm run setup)');
+    logInfo('未配置 dst-ai MCP 服务器');
   }
 } else {
-  logInfo('Claude Desktop 可能未安装');
+  log(false, '项目 .vscode/settings.json 不存在');
 }
 console.log();
 
