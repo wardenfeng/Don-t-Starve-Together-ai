@@ -124,9 +124,52 @@ export class ActionTool {
     // 创建命令
     const command = this.queue.create(validActions);
 
-    // 序列化并写入文件
+    // 序列化并写入JSON文件（用于文件通信）
     const json = CommandQueue.serialize(command);
-    const written = await this.watcher.writeFile("cmd.txt", json);
+    let written = await this.watcher.writeFile("cmd.txt", json);
+
+    // 同时写入Lua格式文件（用于dofile加载）
+    // 将JSON转换为Lua表格式
+    const luaActions = validActions.map((a) => {
+      let lua = `{type="${a.type}"`;
+      if (a.target) lua += `,target={x=${a.target.x},y=${a.target.y},z=${a.target.z}}`;
+      if (a.entity) lua += `,entity="${a.entity}"`;
+      if (a.item) lua += `,item="${a.item}"`;
+      if (a.slot) lua += `,slot="${a.slot}"`;
+      if (a.duration) lua += `,duration=${a.duration}`;
+      lua += "}";
+      return lua;
+    }).join(",");
+
+    const luaContent = `
+-- DST AI Command File
+-- Generated: ${new Date().toISOString()}
+-- Seq: ${command.seq}
+
+local cmd = {
+    seq = ${command.seq},
+    actions = {${luaActions}}
+}
+
+-- 执行命令
+if _DST_AI_SetCommand then
+    _DST_AI_SetCommand(cmd)
+else
+    print("[DST AI] Error: _DST_AI_SetCommand not found. Make sure the mod is loaded.")
+end
+
+return cmd
+`;
+
+    // 写入Lua文件到同步目录
+    const fs = await import("fs");
+    const luaPath = "C:\\Users\\Administrator\\dst-ai-sync\\cmd.lua";
+    try {
+      await fs.promises.writeFile(luaPath, luaContent, "utf-8");
+      written = true;
+    } catch {
+      // Lua文件写入失败，但JSON可能成功
+    }
 
     if (!written) {
       return {

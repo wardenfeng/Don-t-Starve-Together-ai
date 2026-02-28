@@ -51,6 +51,7 @@ class DSTMCPerver {
     // 初始化组件
     this.fileWatcher = new FileWatcher({
       syncDir: env.syncDir,
+      pollInterval: 100,
       onStateChange: (content) => this.onStateChange(content),
       onStatusChange: (connected) => this.onStatusChange(connected),
       onStatsChange: (stats) => this.onStatsChange(stats),
@@ -65,7 +66,7 @@ class DSTMCPerver {
     });
 
     // 初始化工具
-    this.gameStateTool = new GameStateTool(this.stateCache, this.fileWatcher);
+    this.gameStateTool = new GameStateTool();
     this.actionTool = new ActionTool(this.commandQueue, this.fileWatcher);
     this.controlTools = new ControlTools(this.heartbeat, this.stateCache, this.commandQueue);
 
@@ -224,14 +225,10 @@ class DSTMCPerver {
   }
 
   /**
-   * 状态文件变化回调
+   * 状态文件变化回调（不再使用，直接从日志读取）
    */
-  private onStateChange(content: string): void {
-    const state = StateCache.parse(content);
-    if (state) {
-      this.stateCache.set(content, state);
-      console.log("[Server] State updated, cache age:", this.stateCache.getAge(), "ms");
-    }
+  private onStateChange(_content: string): void {
+    // 不再使用state.txt，游戏状态直接从client_log.txt读取
   }
 
   /**

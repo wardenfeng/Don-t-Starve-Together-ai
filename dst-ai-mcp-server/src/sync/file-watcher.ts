@@ -1,7 +1,5 @@
-// 文件监听器 - 使用chokidar监听同步目录的文件变化
+// 文件监听器 - 使用轮询方式监听同步目录的文件变化
 
-import type { FSWatcher } from "chokidar";
-import chokidar from "chokidar";
 import { promises as fs } from "fs";
 import { join } from "path";
 
@@ -21,6 +19,8 @@ export type FileChangeCallback = (eventType: FileEventType, filePath: string) =>
 export interface FileWatcherOptions {
   /** 同步目录路径 */
   syncDir: string;
+  /** 轮询间隔(毫秒) */
+  pollInterval?: number;
   /** 状态变化回调 */
   onStateChange?: (content: string) => void;
   /** 命令确认回调 (命令被游戏读取) */
@@ -34,51 +34,79 @@ export interface FileWatcherOptions {
 }
 
 /**
- * 文件监听器类
+ * 文件状态缓存
+ */
+interface FileCache {
+  content: string;
+  mtime: number;
+}
+
+/**
+ * 文件监听器类 - 使用轮询方式
  */
 export class FileWatcher {
-  private watcher: FSWatcher | null = null;
   private syncDir: string;
   private options: FileWatcherOptions;
-  private fileContents: Map<string, string> = new Map();
+  private fileContents: Map<string, FileCache> = new Map();
+  private pollInterval: NodeJS.Timeout | null = null;
+  private pollMs: number;
 
   constructor(options: FileWatcherOptions) {
     this.syncDir = options.syncDir;
     this.options = options;
+    this.pollMs = options.pollInterval || 100;
   }
 
   /**
-   * 启动文件监听
+   * 启动文件轮询
    */
   async start(): Promise<void> {
     // 确保同步目录存在
     await this.ensureSyncDirectory();
 
-    // 创建监听器
-    this.watcher = chokidar.watch(join(this.syncDir, "*.txt"), {
-      persistent: true,
-      ignoreInitial: true,
-      awaitWriteFinish: {
-        stabilityThreshold: 50,
-        pollInterval: 10,
-      },
-    });
+    // 初始化文件缓存
+    await this.initFileCache();
 
-    // 监听变化事件
-    this.watcher.on("change", (filePath: string) => this.onFileChange(filePath));
-    this.watcher.on("add", (filePath: string) => this.onFileChange(filePath));
-    this.watcher.on("error", (error: unknown) => this.onError(error as Error));
+    // 启动轮询
+    this.pollInterval = setInterval(async () => {
+      await this.checkFiles();
+    }, this.pollMs);
 
-    console.log(`[FileWatcher] Watching directory: ${this.syncDir}`);
+    console.log(`[FileWatcher] Polling directory every ${this.pollMs}ms: ${this.syncDir}`);
   }
 
   /**
-   * 停止文件监听
+   * 初始化文件缓存
+   */
+  private async initFileCache(): Promise<void> {
+    const files = ["state.txt", "cmd.txt", "status.txt", "stats.txt", "control.txt"];
+
+    for (const fileName of files) {
+      try {
+        const filePath = join(this.syncDir, fileName);
+        const content = await fs.readFile(filePath, "utf-8");
+        const stats = await fs.stat(filePath);
+        this.fileContents.set(fileName, {
+          content,
+          mtime: stats.mtimeMs,
+        });
+      } catch {
+        // 文件不存在，初始化为空
+        this.fileContents.set(fileName, {
+          content: "",
+          mtime: 0,
+        });
+      }
+    }
+  }
+
+  /**
+   * 停止文件轮询
    */
   async stop(): Promise<void> {
-    if (this.watcher) {
-      await this.watcher.close();
-      this.watcher = null;
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
       console.log("[FileWatcher] Stopped");
     }
   }
@@ -96,23 +124,34 @@ export class FileWatcher {
   }
 
   /**
-   * 文件变化处理
+   * 检查文件变化
    */
-  private async onFileChange(filePath: string): Promise<void> {
-    const fileName = filePath.split(/[/\\]/).pop() || "";
-    const fileType = this.getFileType(fileName);
+  private async checkFiles(): Promise<void> {
+    const files = ["state.txt", "cmd.txt", "status.txt", "stats.txt", "control.txt"];
 
-    try {
-      const content = await fs.readFile(filePath, "utf-8");
-      const oldContent = this.fileContents.get(fileName);
+    for (const fileName of files) {
+      try {
+        const filePath = join(this.syncDir, fileName);
+        const stats = await fs.stat(filePath);
+        const cached = this.fileContents.get(fileName);
 
-      // 只在内容实际变化时触发回调
-      if (content !== oldContent) {
-        this.fileContents.set(fileName, content);
-        this.handleFileChange(fileType, content);
+        // 文件被修改过
+        if (!cached || stats.mtimeMs > cached.mtime) {
+          const content = await fs.readFile(filePath, "utf-8");
+          const fileType = this.getFileType(fileName);
+
+          // 更新缓存
+          this.fileContents.set(fileName, {
+            content,
+            mtime: stats.mtimeMs,
+          });
+
+          // 触发回调
+          this.handleFileChange(fileType, content);
+        }
+      } catch {
+        // 文件不存在或无法访问，忽略
       }
-    } catch (error) {
-      console.error(`[FileWatcher] Error reading file ${fileName}:`, error);
     }
   }
 
@@ -179,19 +218,21 @@ export class FileWatcher {
   }
 
   /**
-   * 错误处理
-   */
-  private onError(error: Error): void {
-    console.error("[FileWatcher] Watcher error:", error);
-  }
-
-  /**
    * 读取文件内容
    */
   async readFile(fileName: string): Promise<string | null> {
     try {
       const filePath = join(this.syncDir, fileName);
-      return await fs.readFile(filePath, "utf-8");
+      const content = await fs.readFile(filePath, "utf-8");
+      const stats = await fs.stat(filePath);
+
+      // 更新缓存
+      this.fileContents.set(fileName, {
+        content,
+        mtime: stats.mtimeMs,
+      });
+
+      return content;
     } catch {
       return null;
     }
@@ -204,7 +245,13 @@ export class FileWatcher {
     try {
       const filePath = join(this.syncDir, fileName);
       await fs.writeFile(filePath, content, "utf-8");
-      this.fileContents.set(fileName, content);
+      const stats = await fs.stat(filePath);
+
+      // 更新缓存
+      this.fileContents.set(fileName, {
+        content,
+        mtime: stats.mtimeMs,
+      });
       return true;
     } catch (error) {
       console.error(`[FileWatcher] Error writing file ${fileName}:`, error);

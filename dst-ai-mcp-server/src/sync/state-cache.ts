@@ -1,6 +1,6 @@
-// 状态缓存管理 - 缓存游戏状态减少磁盘I/O
+// 状态缓存管理 - 缓存游戏状态
 
-import { StateFile, GameState } from "../types/game.js";
+import type { GameState } from "../types/game.js";
 
 /**
  * 缓存配置
@@ -114,57 +114,5 @@ export class StateCache {
    */
   getTimestamp(): number | null {
     return this.cache?.timestamp || null;
-  }
-
-  /**
-   * 解析状态JSON
-   */
-  static parse(json: string): GameState | null {
-    try {
-      const parsed = JSON.parse(json) as StateFile;
-
-      // 转换简写字段到完整字段
-      const player = parsed.p ? {
-        health: parsed.p.hp,
-        hunger: parsed.p.hu,
-        sanity: parsed.p.sa,
-        position: {
-          x: parsed.p.pos[0],
-          y: parsed.p.pos[1],
-          z: parsed.p.pos[2],
-        },
-      } : parsed.player;
-
-      const world = parsed.w ? {
-        day: parsed.w.day,
-        time: parsed.w.time,
-        season: parsed.w.season,
-        isday: parsed.w.isDay,
-        isnight: false,
-        isdusk: false,
-        moonphase: parsed.w.moon,
-      } : parsed.world;
-
-      const entities = parsed.e?.map(e => ({
-        prefab: e.p,
-        position: { x: e.pos[0], y: e.pos[1], z: e.pos[2] },
-        distance: e.d,
-      })) || parsed.entities || [];
-
-      const inventory = parsed.i?.map(i => ({
-        prefab: i.p,
-        count: i.n,
-      })) || parsed.inventory || [];
-
-      return {
-        player: player!,
-        world: world!,
-        entities,
-        inventory,
-      };
-    } catch (error) {
-      console.error("[StateCache] Failed to parse state JSON:", error);
-      return null;
-    }
   }
 }

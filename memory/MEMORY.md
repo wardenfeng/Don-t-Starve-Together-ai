@@ -101,6 +101,22 @@ Stop-Process -Name "node" -Force
 | `os` 全局不存在 | 硬编码路径 |
 | `_G` 全局不存在 | 使用 `function xxx()` 而非 `_G.xxx = function` |
 | 假数据 | 检查state.txt时间戳是否过期 |
+| **背包物品检测为空** | **TODO: 需要实现 `inst.components.inventory` 遍历物品** |
+
+## 待实现功能
+
+1. **背包物品检测**
+   - API: `inst.components.inventory:GetItems()` 或 `inst.replica.inventory:GetItems()`
+   - 需要获取物品的 prefab、数量、耐久度
+   - 输出到 DST_AI_STATE 的 `inv` 字段
+
+2. **动作执行**
+   - Mod 读取 `cmd.txt` 文件执行动作
+   - 支持移动、拾取、砍伐、攻击等动作
+
+3. **自动保存**
+   - 游戏状态保存到文件
+   - AI 指令持久化
 
 ## 相关记忆文件
 
