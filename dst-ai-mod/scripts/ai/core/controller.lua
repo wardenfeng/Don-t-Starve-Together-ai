@@ -10,9 +10,9 @@ local AIController = Class(function(self, inst, config)
     self.config = config or {}
 
     -- 初始化组件
-    self.file_bridge = FileBridge(inst, config)
-    self.state_collector = StateCollector(inst)
-    self.action_executor = ActionExecutor(inst)
+    self.file_bridge = FileBridge.new(inst, config)
+    self.state_collector = StateCollector.new(inst)
+    self.action_executor = ActionExecutor.new(inst)
 
     -- 配置参数
     self.update_interval = self.config.update_interval or 10  -- 帧间隔
