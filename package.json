@@ -6,7 +6,7 @@
     "install": "node scripts/install.js",
     "setup": "node scripts/setup.js",
     "start": "node scripts/start.js",
-    "dev": "cd dst-ai-mcp-server && npm run dev",
+    "dev": "node scripts/dev.js",
     "build": "cd dst-ai-mcp-server && npm run build",
     "test": "node scripts/test.js",
     "check": "node scripts/health-check.js",
