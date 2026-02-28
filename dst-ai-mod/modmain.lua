@@ -6,26 +6,14 @@ local AIGlobal = {}
 -- 全局AI实例表
 AIGlobal.controllers = {}
 
--- 获取配置
+-- 硬编码配置
 local function GetConfig()
-    local config = {}
-    local modinfo = KnownModIndex:GetModInfo(modname)
-    if modinfo and modinfo.configuration_options then
-        for _, option in ipairs(modinfo.configuration_options) do
-            local options = option.options or {}
-            local default = option.default or
-                (option.options and option.options[1] and option.options[1].data)
-            config[option.name] = GetModConfigData(option.name) or default
-        end
-    end
-
-    -- 默认值
-    config.sync_dir = config.sync_dir or "C:\\dst-ai-sync\\"
-    config.update_interval = config.update_interval or 10
-    config.scan_radius = config.scan_radius or 20
-    config.max_entities = config.max_entities or 15
-
-    return config
+    return {
+        sync_dir = os.getenv("USERPROFILE") .. "\\dst-ai-sync\\",
+        update_interval = 10,
+        scan_radius = 20,
+        max_entities = 15
+    }
 end
 
 -- 为玩家创建AI控制器
@@ -82,7 +70,6 @@ function ai_status()
 
     if not controller then
         print("[DST AI] No AI controller found for this player")
-        print("[DST AI] Available controllers: " .. tostring(table.getCount(AIGlobal.controllers)))
         return
     end
 
@@ -94,7 +81,6 @@ function ai_status()
     print("Connected: " .. tostring(controller:IsConnected()))
     print("Cycles: " .. tostring(stats.cycles))
     print("Actions Executed: " .. tostring(stats.actions_executed))
-    print("Errors: " .. tostring(stats.errors))
     print("===================================")
 end
 
@@ -139,5 +125,4 @@ function ai_disable()
 end
 
 -- Mod加载完成
-print("[DST AI] DST AI Player (MCP) loaded")
-print("[DST AI] Commands: ai_status(), ai_enable(), ai_disable()")
+print("[DST AI] DST AI Player loaded - AI will auto-enable on spawn")
