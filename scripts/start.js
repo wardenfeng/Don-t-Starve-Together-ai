@@ -1,5 +1,5 @@
 // DST AI Player - 一键启动脚本
-// 同时启动MCP服务器和游戏（无控制台窗口）
+// 关闭已运行的游戏，然后启动MCP服务器和游戏（无控制台窗口）
 
 const fs = require('fs');
 const path = require('path');
@@ -23,6 +23,13 @@ if (!fs.existsSync(distFile)) {
   } catch (error) {
     // 忽略错误，继续尝试启动
   }
+}
+
+// 强制关闭已运行的游戏进程
+try {
+  execSync('taskkill /F /IM "dontstarve_steam.exe" /T 2>nul & taskkill /F /IM "dontstarve_x64.exe" /T 2>nul', { shell: true, windowsHide: true });
+} catch {
+  // 忽略错误
 }
 
 // 启动MCP服务器（后台，无窗口）
