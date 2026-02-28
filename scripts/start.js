@@ -7,7 +7,7 @@ const { spawn, execSync } = require('child_process');
 
 const rootDir = path.join(__dirname, '..');
 const serverDir = path.join(rootDir, 'dst-ai-mcp-server');
-const syncDir = path.join(process.env.USERPROFILE, 'dst-ai-sync');
+const syncDir = process.env.USERPROFILE + '\\dst-ai-sync';
 
 // 检查同步目录
 if (!fs.existsSync(syncDir)) {
@@ -20,17 +20,13 @@ if (!fs.existsSync(distFile)) {
   try {
     execSync('npm install', { cwd: serverDir, stdio: 'hide', shell: true });
     execSync('npm run build', { cwd: serverDir, stdio: 'hide', shell: true });
-  } catch (error) {
-    // 忽略错误，继续尝试启动
-  }
+  } catch (e) {}
 }
 
-// 强制关闭已运行的游戏进程
+// 使用PowerShell强制关闭游戏进程
 try {
-  execSync('taskkill /F /IM "dontstarve_steam.exe" /T 2>nul & taskkill /F /IM "dontstarve_x64.exe" /T 2>nul', { shell: true, windowsHide: true });
-} catch {
-  // 忽略错误
-}
+  execSync('powershell -Command "Stop-Process -Name dontstarve -Force -ErrorAction SilentlyContinue"', { windowsHide: true, stdio: 'ignore' });
+} catch (e) {}
 
 // 启动MCP服务器（后台，无窗口）
 const serverProcess = spawn('node', ['dist/index.js'], {
@@ -45,8 +41,6 @@ serverProcess.unref();
 // 等待后启动游戏
 setTimeout(() => {
   try {
-    execSync('start steam://rungameid/322330', { shell: true, windowsHide: true });
-  } catch {
-    // 忽略错误
-  }
+    execSync('start steam://rungameid/322330', { shell: true, windowsHide: true, stdio: 'ignore' });
+  } catch (e) {}
 }, 2000);
