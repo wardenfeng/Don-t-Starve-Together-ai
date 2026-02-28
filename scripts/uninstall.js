@@ -12,11 +12,10 @@ const modPaths = [
 ];
 
 const syncDir = path.join(process.env.USERPROFILE, 'dst-ai-sync');
-const configFile = path.join(
-  process.env.APPDATA || path.join(process.env.HOME, 'Library', 'Application Support'),
-  'Claude',
-  'claude_desktop_config.json'
-);
+
+const vscodeSettingsFile = process.env.APPDATA
+  ? path.join(process.env.APPDATA, 'Code', 'User', 'settings.json')
+  : path.join(process.env.HOME, '.vscode', 'settings.json');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -37,7 +36,7 @@ async function main() {
   console.log(' 警告: 此操作将删除以下内容:');
   console.log('   - 游戏中的 Lua Mod');
   console.log('   - 同步目录中的文件');
-  console.log('   - Claude Desktop MCP 配置');
+  console.log('   - VSCode Claude Code 插件 MCP 配置');
   console.log();
 
   const answer = await question(' 确认卸载？(Y/N): ');
@@ -65,17 +64,17 @@ async function main() {
     fs.rmSync(syncDir, { recursive: true, force: true });
   }
 
-  // 移除Claude Desktop配置
-  if (fs.existsSync(configFile)) {
-    console.log('[更新] Claude Desktop 配置');
+  // 移除VSCode MCP配置
+  if (fs.existsSync(vscodeSettingsFile)) {
+    console.log('[更新] VSCode MCP 配置');
     try {
-      const config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
+      const config = JSON.parse(fs.readFileSync(vscodeSettingsFile, 'utf-8'));
       if (config.mcpServers && config.mcpServers['dst-ai']) {
         delete config.mcpServers['dst-ai'];
-        fs.writeFileSync(configFile, JSON.stringify(config, null, 2), 'utf-8');
+        fs.writeFileSync(vscodeSettingsFile, JSON.stringify(config, null, 2), 'utf-8');
       }
     } catch (error) {
-      console.log('[提示] 无法更新 Claude Desktop 配置');
+      console.log('[提示] 无法更新 VSCode 配置');
     }
   }
 

@@ -1,9 +1,9 @@
 // DST AI Player - MCP 服务器配置脚本
-// 自动安装依赖、构建、配置Claude Desktop
+// 自动安装依赖、构建、配置VSCode Claude Code插件
 
 const fs = require('fs');
 const path = require('path');
-const { execSync, spawn } = require('child_process');
+const { execSync } = require('child_process');
 
 const rootDir = path.join(__dirname, '..');
 const serverDir = path.join(rootDir, 'dst-ai-mcp-server');
@@ -11,7 +11,7 @@ const serverDir = path.join(rootDir, 'dst-ai-mcp-server');
 function exec(command, cwd = serverDir) {
   try {
     return execSync(command, { cwd, encoding: 'utf-8' });
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -61,41 +61,38 @@ console.log();
 const serverPath = path.join(serverDir, 'dist', 'index.js');
 const syncDir = path.join(process.env.USERPROFILE, 'dst-ai-sync');
 
-// 配置Claude Desktop
+// 配置 VSCode Claude Code 插件
 console.log('═'.repeat(50));
-console.log(' [配置] Claude Desktop MCP 服务器');
+console.log(' [配置] VSCode Claude Code 插件');
 console.log('═'.repeat(50));
 console.log();
 
-const configDir = process.env.APPDATA ?
-  path.join(process.env.APPDATA, 'Claude') :
-  path.join(process.env.HOME, 'Library', 'Application Support', 'Claude');
+const vscodeSettingsDir = process.env.APPDATA
+  ? path.join(process.env.APPDATA, 'Code', 'User')
+  : path.join(process.env.HOME, '.vscode');
 
-const configFile = path.join(configDir, 'claude_desktop_config.json');
+const vscodeSettingsFile = path.join(vscodeSettingsDir, 'settings.json');
 
-if (!fs.existsSync(configDir)) {
-  console.log('[错误] 未找到 Claude Desktop 配置目录');
-  console.log('请确保已安装 Claude Desktop');
-  process.exit(1);
+if (!fs.existsSync(vscodeSettingsDir)) {
+  console.log('[创建] VSCode 配置目录');
+  fs.mkdirSync(vscodeSettingsDir, { recursive: true });
 }
 
 // 读取现有配置
-let config = {};
-if (fs.existsSync(configFile)) {
+let vscodeConfig = {};
+if (fs.existsSync(vscodeSettingsFile)) {
   try {
-    config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
-    console.log('[备份] 现有配置文件已备份');
-    fs.copyFileSync(configFile, configFile + '.backup');
+    const content = fs.readFileSync(vscodeSettingsFile, 'utf-8');
+    vscodeConfig = JSON.parse(content);
   } catch {}
 }
 
-// 确保mcpServers对象存在
-if (!config.mcpServers) {
-  config.mcpServers = {};
+// 添加或更新 mcpServers
+if (!vscodeConfig.mcpServers) {
+  vscodeConfig.mcpServers = {};
 }
 
-// 添加dst-ai服务器
-config.mcpServers['dst-ai'] = {
+vscodeConfig.mcpServers['dst-ai'] = {
   command: 'node',
   args: [serverPath],
   env: {
@@ -104,22 +101,19 @@ config.mcpServers['dst-ai'] = {
 };
 
 // 写入配置
-fs.writeFileSync(configFile, JSON.stringify(config, null, 2), 'utf-8');
+fs.writeFileSync(vscodeSettingsFile, JSON.stringify(vscodeConfig, null, 2), 'utf-8');
 
-console.log();
-console.log('═'.repeat(50));
-console.log(' [完成] MCP 服务器配置完成！');
-console.log('═'.repeat(50));
+console.log(`[完成] VSCode 配置已更新`);
 console.log();
 console.log(` 服务器路径: ${serverPath}`);
 console.log(` 同步目录: ${syncDir}`);
-console.log(` 配置文件: ${configFile}`);
+console.log(` 配置文件: ${vscodeSettingsFile}`);
 console.log();
 console.log(' 下一步:');
-console.log(' 1. 重启 Claude Desktop');
-console.log(' 2. 运行 npm start 启动游戏和服务器');
-console.log(' 3. 游戏内启用 Mod 并输入 ai_enable()');
-console.log(' 4. 在 Claude 中对话操作游戏');
+console.log(' 1. 在 VSCode 中按 Ctrl+Shift+P');
+console.log(' 2. 输入 "Reload Window" 并回车');
+console.log(' 3. 在对话中输入 /mcp 验证配置');
+console.log(' 4. 运行 npm start 启动游戏');
 console.log();
 
 // 询问是否启动游戏

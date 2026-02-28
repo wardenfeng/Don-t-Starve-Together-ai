@@ -52,9 +52,29 @@ npm run setup
 此命令会：
 - 安装 npm 依赖
 - 编译 TypeScript 代码
-- 自动配置 Claude Desktop
+- 自动配置 VSCode Claude Code 插件
 
-#### 3. 启动系统
+#### 3. 配置 VSCode Claude Code 插件
+
+在 VSCode 设置 (`settings.json`) 中添加：
+
+```json
+{
+  "mcpServers": {
+    "dst-ai": {
+      "command": "node",
+      "args": ["C:\\Users\\Administrator\\Desktop\\Don't Starve Together ai\\dst-ai-mcp-server\\dist\\index.js"],
+      "env": {
+        "SYNC_DIR": "C:\\Users\\Administrator\\dst-ai-sync"
+      }
+    }
+  }
+}
+```
+
+然后重新加载 VSCode 窗口 (`Ctrl+Shift+P` → `Reload Window`)
+
+#### 4. 启动系统
 
 ```bash
 npm start
@@ -73,27 +93,6 @@ npm start
 | `npm run check` | 健康检查 |
 | `npm run clean` | 清理构建产物 |
 | `npm run uninstall` | 卸载Mod和配置 |
-
-### 3. 配置Claude Desktop
-
-编辑 Claude Desktop 配置文件：
-
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "dst-ai": {
-      "command": "node",
-      "args": ["C:\\Users\\YourName\\Don't Starve Together ai\\dst-ai-mcp-server\\dist\\index.js"],
-      "env": {
-        "SYNC_DIR": "C:\\Users\\YourName\\dst-ai-sync\\"
-      }
-    }
-  }
-}
-```
 
 ### 4. 使用
 
