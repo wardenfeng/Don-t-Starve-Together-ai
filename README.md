@@ -53,17 +53,26 @@ npm run setup
 - 安装 npm 依赖
 - 编译 TypeScript 代码
 
-#### 3. 加载 MCP 配置
+#### 3. 配置 MCP 服务器（所有客户端）
 
-MCP 配置已在项目 `.vscode/settings.json` 中，使用相对路径：
-- 服务器路径: `${workspaceFolder}/dst-ai-mcp-server/dist/index.js`
-- 同步目录: `${workspaceFolder}/../dst-ai-sync`
+```bash
+npm run config
+```
 
-**只需重新加载 VSCode 窗口**：
-- 按 `Ctrl+Shift+P`
-- 输入 `Reload Window` 并回车
+这会自动配置所有 Claude 客户端：
 
-然后在对话中输入 `/mcp` 验证配置
+| 客户端 | 配置位置 |
+|--------|----------|
+| VSCode Claude Code | `.vscode/settings.json` |
+| Claude Desktop | `~/.config/claude/` |
+| Claude CLI | `~/.claude/` 或 `~/.config/claude/` |
+
+**完成后**：
+- VSCode: 重新加载窗口 (`Ctrl+Shift+P` → `Reload Window`)
+- Claude Desktop: 重启应用
+- Claude CLI: 直接可用
+
+在对话中输入 `/mcp` 验证配置
 
 #### 4. 启动系统
 
