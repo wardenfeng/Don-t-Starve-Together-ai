@@ -244,6 +244,11 @@ local function ProcessCommands(inst)
     end
 end
 
+-- 服务器端：当世界加载时初始化
+AddGamePostInit(function()
+    print("[DST AI Server] World initialized")
+end)
+
 AddPlayerPostInit(function(inst)
     print("[DST AI] Player initialized: " .. (inst.prefab or "unknown"))
 

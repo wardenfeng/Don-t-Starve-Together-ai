@@ -23,8 +23,8 @@ const distFile = path.join(serverDir, 'dist', 'index.js');
 if (!fs.existsSync(distFile)) {
   try {
     console.log('Building MCP server...');
-    execSync('npm install', { cwd: serverDir, stdio: 'hide', shell: true });
-    execSync('npm run build', { cwd: serverDir, stdio: 'hide', shell: true });
+    execSync('npm install', { cwd: serverDir, stdio: 'inherit', shell: true });
+    execSync('npm run build', { cwd: serverDir, stdio: 'inherit', shell: true });
   } catch (e) {}
 }
 
@@ -56,29 +56,37 @@ try {
 } catch (e) {}
 
 // 等待进程完全关闭
-const wait = (ms) => new Promise(r => setTimeout(r, ms));
-await wait(2000);
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-// 启动MCP服务器（后台，无窗口）
-const serverProcess = spawn('node', ['dist/index.js'], {
-  cwd: serverDir,
-  detached: true,
-  stdio: 'ignore',
-  shell: true,
-  windowsHide: true
-});
-serverProcess.unref();
+// 主启动函数
+async function main() {
+  await wait(2000);
 
-// 等待服务器启动
-await wait(1500);
-
-// 启动游戏
-try {
-  execSync('start steam://rungameid/322330', {
+  // 启动MCP服务器（后台，无窗口）
+  const serverProcess = spawn('node', ['dist/index.js'], {
+    cwd: serverDir,
+    detached: true,
+    stdio: 'ignore',
     shell: true,
-    windowsHide: true,
-    stdio: 'ignore'
+    windowsHide: true
   });
-} catch (e) {}
+  serverProcess.unref();
 
-console.log('DST AI Player启动完成...');
+  // 等待服务器启动
+  await wait(1500);
+
+  // 启动游戏 - 通过Steam
+  try {
+    const steamCmd = 'powershell -Command "Start-Process \'C:\\Program Files (x86)\\Steam\\steam.exe\' -ArgumentList \'-applaunch 322330\'"';
+    execSync(steamCmd, {
+      stdio: 'ignore',
+      shell: true
+    });
+  } catch (e) {}
+
+  console.log('DST AI Player启动完成...');
+}
+
+main().catch(console.error);
