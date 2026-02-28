@@ -26,9 +26,9 @@ configuration_options =
         hover = "与MCP服务器通信的文件同步目录",
         options =
         {
-            {description = "C:\\dst-ai-sync\\", data = "C:\\dst-ai-sync\\"},
+            {description = "%USERPROFILE%\\dst-ai-sync\\", data = "%USERPROFILE%\\dst-ai-sync\\"},
         },
-        default = "C:\\dst-ai-sync\\",
+        default = "%USERPROFILE%\\dst-ai-sync\\",
     },
     {
         name = "update_interval",
