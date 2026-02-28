@@ -1,0 +1,28 @@
+{
+  "name": "dst-ai-player",
+  "version": "1.0.0",
+  "description": "AI-powered Don't Starve Together player using MCP protocol",
+  "scripts": {
+    "install": "cd scripts && install.bat",
+    "setup": "cd scripts && setup-mcp.bat",
+    "start": "cd scripts && start.bat",
+    "dev": "cd scripts && dev-server.bat",
+    "build": "cd dst-ai-mcp-server && npm run build",
+    "test": "cd scripts && test-server.bat",
+    "check": "cd scripts && health-check.bat",
+    "clean": "node scripts/clean.js",
+    "uninstall": "cd scripts && uninstall.bat"
+  },
+  "keywords": [
+    "dst",
+    "don't-starve",
+    "ai",
+    "mcp",
+    "game-automation"
+  ],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

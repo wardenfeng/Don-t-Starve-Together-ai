@@ -22,24 +22,57 @@
 
 ## 快速开始
 
-### 1. 安装游戏Mod
-
-1. 将 `dst-ai-mod` 文件夹复制到饥荒联机版 Mods 目录：
-   - Windows: `Documents\Klei\DoNotStarveTogether\Mods\`
-   - 或 Steam安装目录的 `mods\` 文件夹
-
-2. 创建同步目录：
-   ```
-   %USERPROFILE%\dst-ai-sync\
-   ```
-
-### 2. 安装MCP服务器
+### 一键安装（推荐）
 
 ```bash
-cd dst-ai-mcp-server
+# 克隆项目后，在项目根目录运行：
 npm install
-npm run build
+npm run setup    # 安装Mod + 配置MCP服务器
+npm start        # 启动游戏和MCP服务器
 ```
+
+### 手动安装
+
+#### 1. 安装游戏Mod
+
+运行安装脚本：
+```bash
+npm run install
+```
+
+或将 `dst-ai-mod` 文件夹复制到饥荒联机版 Mods 目录：
+   - Windows: `Documents\Klei\DoNotStarveTogether\Mods\`
+
+#### 2. 配置MCP服务器
+
+```bash
+npm run setup
+```
+
+此命令会：
+- 安装 npm 依赖
+- 编译 TypeScript 代码
+- 自动配置 Claude Desktop
+
+#### 3. 启动系统
+
+```bash
+npm start
+```
+
+### 其他可用命令
+
+| 命令 | 说明 |
+|------|------|
+| `npm run setup` | 安装Mod + 配置MCP服务器 |
+| `npm run install` | 仅安装游戏Mod |
+| `npm start` | 启动游戏和MCP服务器 |
+| `npm run dev` | 开发模式（自动重载） |
+| `npm run build` | 构建MCP服务器 |
+| `npm run test` | 测试MCP服务器 |
+| `npm run check` | 健康检查 |
+| `npm run clean` | 清理构建产物 |
+| `npm run uninstall` | 卸载Mod和配置 |
 
 ### 3. 配置Claude Desktop
 
