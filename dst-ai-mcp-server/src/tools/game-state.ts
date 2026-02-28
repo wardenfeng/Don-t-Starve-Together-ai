@@ -3,6 +3,7 @@
 import { StateCache } from "../sync/state-cache.js";
 import { FileWatcher } from "../sync/file-watcher.js";
 import { GameState } from "../types/game.js";
+import { DSTLogParser, findClientLogPath, type ParsedGameState } from "../sync/log-parser.js";
 
 /**
  * 获取游戏状态工具
@@ -10,10 +11,28 @@ import { GameState } from "../types/game.js";
 export class GameStateTool {
   private cache: StateCache;
   private watcher: FileWatcher;
+  private logParser: DSTLogParser | null = null;
+  private logState: ParsedGameState | null = null;
 
   constructor(cache: StateCache, watcher: FileWatcher) {
     this.cache = cache;
     this.watcher = watcher;
+    this.initLogParser();
+  }
+
+  /**
+   * 初始化日志解析器
+   */
+  private initLogParser(): void {
+    findClientLogPath().then(logPath => {
+      if (logPath) {
+        this.logParser = new DSTLogParser(logPath);
+        this.logParser.start((state) => {
+          this.logState = state;
+        });
+        console.log("[GameStateTool] Log parser started:", logPath);
+      }
+    });
   }
 
   /**
@@ -48,9 +67,92 @@ export class GameStateTool {
   }> {
     const allowExpired = args.allow_expired ?? false;
 
-    // 先尝试读取文件以获取游戏写入的时间戳
-    const raw = await this.watcher.readFile("state.txt");
+    // 优先使用日志解析器的数据
+    if (this.logState) {
+      const now = Date.now();
+      const dataAge = now - this.logState.timestamp;
 
+      if (!allowExpired && dataAge > 5000) {
+        return {
+          success: false,
+          timestamp: this.logState.timestamp,
+          cacheAge: dataAge,
+          state: null,
+          message: `Game data is stale (${Math.round(dataAge / 1000)}s old). The game may not be running.`,
+        };
+      }
+
+      // 转换日志状态为游戏状态格式
+      const state: GameState = {
+        player: {
+          health: this.logState.player.health,
+          hunger: this.logState.player.hunger,
+          sanity: this.logState.player.sanity,
+          position: this.logState.player.position,
+          isGhost: false,
+        },
+        world: {
+          day: this.logState.world.day,
+          time: 0.5,
+          season: "summer",
+          isday: true,
+          isnight: false,
+          isdusk: false,
+          moonphase: "new",
+          israining: false,
+        },
+        entities: [],
+        inventory: [],
+      };
+
+      const readableState = this.formatForAI(state);
+      return {
+        success: true,
+        timestamp: this.logState.timestamp,
+        cacheAge: dataAge,
+        state: readableState as GameState,
+        message: `Game state retrieved from log (data age: ${Math.round(dataAge)}ms)`,
+      };
+    }
+
+    // 如果日志解析器没有数据，主动读取日志
+    if (this.logParser) {
+      const state = await this.readLatestFromLog();
+      if (state) {
+        const gameState: GameState = {
+          player: {
+            health: state.player.health,
+            hunger: state.player.hunger,
+            sanity: state.player.sanity,
+            position: state.player.position,
+            isGhost: false,
+          },
+          world: {
+            day: state.world.day,
+            time: 0.5,
+            season: "summer",
+            isday: true,
+            isnight: false,
+            isdusk: false,
+            moonphase: "new",
+            israining: false,
+          },
+          entities: [],
+          inventory: [],
+        };
+        const readableState = this.formatForAI(gameState);
+        return {
+          success: true,
+          timestamp: state.timestamp,
+          cacheAge: 0,
+          state: readableState as GameState,
+          message: "Game state retrieved from log (live)",
+        };
+      }
+    }
+
+    // 回退到文件读取
+    const raw = await this.watcher.readFile("state.txt");
     if (!raw) {
       return {
         success: false,
@@ -165,5 +267,49 @@ export class GameStateTool {
     if (entity.pickup_item) notes.push("item on ground");
 
     return notes.join(", ") || "";
+  }
+
+  /**
+   * 直接从日志读取最新状态
+   */
+  private async readLatestFromLog(): Promise<ParsedGameState | null> {
+    if (!this.logParser) return null;
+
+    const latest = this.logParser.getLatestState();
+    if (latest) return latest;
+
+    // 如果解析器没有数据，尝试直接读取日志文件
+    const { findClientLogPath } = await import("../sync/log-parser.js");
+    const logPath = await findClientLogPath();
+    if (!logPath) return null;
+
+    try {
+      const fs = await import("fs");
+      const content = await fs.promises.readFile(logPath, "utf-8");
+      const lines = content.split("\n").reverse();
+
+      for (const line of lines) {
+        const match = line.match(/DST_AI_STATE (\{.+\})/);
+        if (match) {
+          const data = JSON.parse(match[1]);
+          return {
+            timestamp: Date.now(),
+            player: {
+              health: data.hp || 1,
+              hunger: data.hu || 1,
+              sanity: data.sa || 1,
+              position: { x: data.x || 0, y: 0, z: data.z || 0 },
+            },
+            world: {
+              day: data.day || 0,
+            },
+          };
+        }
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
   }
 }
