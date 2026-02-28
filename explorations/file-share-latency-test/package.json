@@ -1,0 +1,13 @@
+{
+  "name": "file-share-latency-test",
+  "version": "1.0.0",
+  "description": "测试文件共享方式通信的延迟",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "keywords": ["ipc", "file-share", "latency", "test"],
+  "author": "",
+  "license": "MIT"
+}
