@@ -57,14 +57,8 @@ if (!buildResult) {
 console.log('[完成] 构建成功');
 console.log();
 
-// 检查项目配置
-const projectSettings = path.join(rootDir, '.vscode', 'settings.json');
-if (fs.existsSync(projectSettings)) {
-  console.log('[提示] MCP 配置已存在于项目 .vscode/settings.json');
-  console.log('        使用相对路径，团队通用');
-} else {
-  console.log('[提示] 项目 MCP 配置不存在，请检查 .vscode/settings.json');
-}
+console.log('[提示] MCP 配置位置: ~/.claude.json');
+console.log('        如需更新配置，请手动编辑该文件');
 
 console.log();
 console.log('═'.repeat(50));
@@ -72,10 +66,9 @@ console.log(' [完成] 配置完成！');
 console.log('═'.repeat(50));
 console.log();
 console.log(' 下一步:');
-console.log(' 1. 在 VSCode 中按 Ctrl+Shift+P');
-console.log(' 2. 输入 "Reload Window" 并回车');
-console.log(' 3. 在对话中输入 /mcp 验证配置');
-console.log(' 4. 运行 npm start 启动游戏');
+console.log(' 1. 在 VSCode 中重新加载窗口 (Ctrl+Shift+P → Reload Window)');
+console.log(' 2. 在对话中输入 /mcp 验证配置');
+console.log(' 3. 运行 npm start 启动游戏');
 console.log();
 
 // 询问是否启动游戏

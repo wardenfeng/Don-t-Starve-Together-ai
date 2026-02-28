@@ -48,24 +48,10 @@ export class GameStateTool {
   }> {
     const allowExpired = args.allow_expired ?? false;
 
-    // 尝试从缓存获取
-    let state = allowExpired ? this.cache.getAllowExpired() : this.cache.get();
+    // 先尝试读取文件以获取游戏写入的时间戳
+    const raw = await this.watcher.readFile("state.txt");
 
-    // 如果缓存为空或已过期，尝试主动读取文件
-    if (!state) {
-      const raw = await this.watcher.readFile("state.txt");
-      if (raw) {
-        state = StateCache.parse(raw);
-        if (state) {
-          this.cache.set(raw, state);
-        }
-      }
-    }
-
-    const timestamp = this.cache.getTimestamp();
-    const cacheAge = this.cache.getAge();
-
-    if (!state) {
+    if (!raw) {
       return {
         success: false,
         timestamp: null,
@@ -75,15 +61,54 @@ export class GameStateTool {
       };
     }
 
+    // 解析原始JSON获取游戏时间戳
+    let gameTimestamp: number | null = null;
+    try {
+      const parsed = JSON.parse(raw);
+      gameTimestamp = parsed.t || null;
+    } catch {
+      // 忽略解析错误
+    }
+
+    // 检查数据新鲜度（使用游戏写入的时间戳）
+    const STALE_THRESHOLD_MS = 10000;
+    const now = Date.now();
+    const dataAge = gameTimestamp ? (now - gameTimestamp) : Infinity;
+
+    if (!allowExpired && dataAge > STALE_THRESHOLD_MS) {
+      return {
+        success: false,
+        timestamp: gameTimestamp,
+        cacheAge: dataAge,
+        state: null,
+        message: `Game data is stale (${Math.round(dataAge / 1000)}s old). The game may not be running.`,
+      };
+    }
+
+    // 数据新鲜，解析并返回状态
+    const state = StateCache.parse(raw);
+    if (!state) {
+      return {
+        success: false,
+        timestamp: gameTimestamp,
+        cacheAge: dataAge,
+        state: null,
+        message: "Failed to parse game state data.",
+      };
+    }
+
+    // 更新缓存
+    this.cache.set(raw, state);
+
     // 格式化输出，便于AI阅读
     const readableState = this.formatForAI(state);
 
     return {
       success: true,
-      timestamp,
-      cacheAge,
+      timestamp: gameTimestamp,
+      cacheAge: dataAge,
       state: readableState as GameState,
-      message: `Game state retrieved (cache age: ${Math.round(cacheAge)}ms)`,
+      message: `Game state retrieved (data age: ${Math.round(dataAge)}ms)`,
     };
   }
 

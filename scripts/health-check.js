@@ -121,20 +121,24 @@ if (fs.existsSync(mcpSdk)) {
 }
 console.log();
 
-// 7. 检查项目MCP配置
-console.log('[7/8] 检查项目 MCP 配置...');
-const projectSettings = path.join(rootDir, '.vscode', 'settings.json');
-if (fs.existsSync(projectSettings)) {
-  log(true, '项目 .vscode/settings.json 存在');
+// 7. 检查MCP配置
+console.log('[7/8] 检查 MCP 配置...');
+const claudeConfig = path.join(process.env.USERPROFILE || process.env.HOME, '.claude.json');
+if (fs.existsSync(claudeConfig)) {
+  log(true, 'MCP 配置文件存在: ~/.claude.json');
 
-  const config = JSON.parse(fs.readFileSync(projectSettings, 'utf-8'));
-  if (config.mcpServers && config.mcpServers['dst-ai']) {
-    log(true, 'dst-ai MCP 服务器已配置 (使用相对路径)');
-  } else {
-    logInfo('未配置 dst-ai MCP 服务器');
+  try {
+    const config = JSON.parse(fs.readFileSync(claudeConfig, 'utf-8'));
+    if (config.mcpServers && config.mcpServers['dst-ai']) {
+      log(true, 'dst-ai MCP 服务器已配置');
+    } else {
+      logInfo('未配置 dst-ai MCP 服务器');
+    }
+  } catch {
+    logInfo('无法解析 MCP 配置文件');
   }
 } else {
-  log(false, '项目 .vscode/settings.json 不存在');
+  logInfo('MCP 配置文件不存在 (~/.claude.json)');
 }
 console.log();
 
@@ -164,7 +168,7 @@ if (issuesFound === 0) {
   console.log(' 常用修复命令:');
   console.log('   npm run install  - 安装 Lua Mod');
   console.log('   npm run setup    - 配置 MCP 服务器');
-  console.log('   npm run test     - 测试服务器');
+  console.log('   npm run check    - 重新运行健康检查');
 }
 console.log('═'.repeat(50));
 console.log();
