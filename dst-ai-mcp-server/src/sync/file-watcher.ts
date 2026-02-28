@@ -1,5 +1,6 @@
 // 文件监听器 - 使用chokidar监听同步目录的文件变化
 
+import type { FSWatcher } from "chokidar";
 import chokidar from "chokidar";
 import { promises as fs } from "fs";
 import { join } from "path";
@@ -36,7 +37,7 @@ export interface FileWatcherOptions {
  * 文件监听器类
  */
 export class FileWatcher {
-  private watcher: chokidar.FSWatcher | null = null;
+  private watcher: FSWatcher | null = null;
   private syncDir: string;
   private options: FileWatcherOptions;
   private fileContents: Map<string, string> = new Map();
@@ -64,9 +65,9 @@ export class FileWatcher {
     });
 
     // 监听变化事件
-    this.watcher.on("change", (filePath) => this.onFileChange(filePath));
-    this.watcher.on("add", (filePath) => this.onFileChange(filePath));
-    this.watcher.on("error", (error) => this.onError(error));
+    this.watcher.on("change", (filePath: string) => this.onFileChange(filePath));
+    this.watcher.on("add", (filePath: string) => this.onFileChange(filePath));
+    this.watcher.on("error", (error: unknown) => this.onError(error as Error));
 
     console.log(`[FileWatcher] Watching directory: ${this.syncDir}`);
   }

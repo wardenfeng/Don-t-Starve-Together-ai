@@ -15,6 +15,7 @@ import { Heartbeat } from "./sync/heartbeat.js";
 import { GameStateTool } from "./tools/game-state.js";
 import { ActionTool } from "./tools/action.js";
 import { ControlTools } from "./tools/control.js";
+import type { Action } from "./types/game.js";
 
 /**
  * 获取环境变量
@@ -162,7 +163,7 @@ class DSTMCPerver {
    * 处理 send_action
    */
   private async handleSendAction(args: unknown) {
-    const result = await this.actionTool.execute(args as { actions: unknown[] });
+    const result = await this.actionTool.execute(args as { actions: Array<Partial<Action>> });
 
     return {
       content: [
