@@ -48,7 +48,10 @@ local function CreatePlayerController(player)
     local controller = AIController(player, config)
     AIGlobal.controllers[userid] = controller
 
-    print("[DST AI] Created AI controller for player: " .. (player.name or "Unknown"))
+    -- 自动启用AI控制
+    controller:Enable()
+
+    print("[DST AI] AI controller created and AUTO-ENABLED for player: " .. (player.name or "Unknown"))
 end
 
 -- 监听玩家生成事件

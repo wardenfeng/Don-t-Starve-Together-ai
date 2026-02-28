@@ -1,5 +1,5 @@
 name = "DST AI Player (MCP)"
-description = "让AI通过MCP协议自动玩饥荒联机版。监听文件变化，通过MCP工具与大模型通信。"
+description = "让AI通过MCP协议自动玩饥荒联机版。Mod加载后自动启用AI控制。"
 author = "AI Assistant"
 version = "1.0.0"
 
@@ -14,9 +14,6 @@ all_clients_require_mod = false
 client_only_mod = true
 
 server_filter_tags = {"character", "utility"}
-
-icon_atlas = "modicon.xml"
-icon = "modicon.tex"
 
 configuration_options =
 {
