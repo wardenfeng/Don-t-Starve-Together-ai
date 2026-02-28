@@ -5,6 +5,7 @@
   "scripts": {
     "install": "node scripts/install.js",
     "setup": "node scripts/setup.js",
+    "config": "node scripts/configure-mcp.js",
     "start": "node scripts/start.js",
     "dev": "node scripts/dev.js",
     "build": "cd dst-ai-mcp-server && npm run build",
