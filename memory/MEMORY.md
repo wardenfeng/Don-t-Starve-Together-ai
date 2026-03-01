@@ -1,4 +1,4 @@
-# DST AI Player - 项目记忆
+# DST AI MCP Server - 项目记忆
 
 ## API 资源和学习资料
 
@@ -50,75 +50,28 @@ AddPlayerPostInit(function(inst) end)    -- 玩家初始化
 AddUpdateFunction(function(dt) end)      -- 每帧更新
 ```
 
-### Mod 目录结构
-
-- **开发目录**: `dst-ai-mod/`
-- **实际安装位置**: `C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\dst-ai-mod\`
-- **强制启用**: 在 `mods/modsettings.lua` 中添加 `ForceEnableMod("dst-ai-mod")`
-
-### modinfo.lua 最小配置
-
-```lua
-name = "DST AI Player"
-description = "AI controls your DST character through MCP."
-author = "AI Assistant"
-version = "1.0.0"
-api_version = 10
-dst_compatible = true
-all_clients_require_mod = false
-client_only_mod = true
-```
-
 ## 通信协议
 
-### state.txt (游戏 → AI)
+### state.txt (游戏 → MCP)
 ```json
 {"v":1,"hp":0.8,"hu":0.6,"sa":0.9,"x":100,"z":-200,"day":5}
 ```
 
 ### 同步目录
-`C:\Users\Administrator\dst-ai-sync\`
+`%USERPROFILE%\dst-ai-sync\`
 
-## 重启脚本
+## 项目结构
 
-使用 PowerShell 关闭进程：
-```powershell
-Stop-Process -Name "dontstarve*" -Force
-Stop-Process -Name "node" -Force
-```
+- **MCP服务器**: `dst-ai-mcp-server/` - Node.js MCP 服务器
+- **DST脚本**: `dst_scripts/` - DST 游戏脚本参考
+- **文档**: `docs/` - API 参考和协议文档
 
-## 调试命令 (游戏内控制台)
+## 调试命令
 
-- `ai_status()` - 显示AI状态
-- `print()` - 输出到日志
-- `ThePlayer` - 当前玩家实例
-
-## 已知问题及解决
-
-| 问题 | 解决方案 |
-|------|----------|
-| Mod 不显示在列表 | 复制到游戏mods目录 + ForceEnableMod |
-| `os` 全局不存在 | 硬编码路径 |
-| `_G` 全局不存在 | 使用 `function xxx()` 而非 `_G.xxx = function` |
-| 假数据 | 检查state.txt时间戳是否过期 |
-| **背包物品检测为空** | **TODO: 需要实现 `inst.components.inventory` 遍历物品** |
-
-## 待实现功能
-
-1. **背包物品检测**
-   - API: `inst.components.inventory:GetItems()` 或 `inst.replica.inventory:GetItems()`
-   - 需要获取物品的 prefab、数量、耐久度
-   - 输出到 DST_AI_STATE 的 `inv` 字段
-
-2. **动作执行**
-   - Mod 读取 `cmd.txt` 文件执行动作
-   - 支持移动、拾取、砍伐、攻击等动作
-
-3. **自动保存**
-   - 游戏状态保存到文件
-   - AI 指令持久化
+- `get_game_state` - 获取游戏状态
+- `send_action` - 发送动作指令
+- `get_ai_status` - 获取AI状态
 
 ## 相关记忆文件
 
 - **[dst-api-reference.md](dst-api-reference.md)** - 详细API快速参考手册
-
