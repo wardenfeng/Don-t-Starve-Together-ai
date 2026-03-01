@@ -10,8 +10,7 @@
     "build-mcp": "cd dst-ai-mcp-server && npm run build",
     "health-check": "node scripts/health-check.js",
     "clean-build": "node scripts/clean-build.js",
-    "uninstall-mod": "node scripts/uninstall-mod.js",
-    "uninstall-mod:yes": "node scripts/uninstall-mod.js --yes"
+    "uninstall-mod": "node scripts/uninstall-mod.js"
   },
   "keywords": [
     "dst",

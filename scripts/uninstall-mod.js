@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-// 检查 --yes 或 -y 参数
-const skipConfirm = process.argv.includes('--yes') || process.argv.includes('-y');
+// 检查 --confirm 参数（需要确认时使用）
+const needConfirm = process.argv.includes('--confirm');
 
 const modPaths = [
   path.join(process.env.USERPROFILE, 'Documents', 'Klei', 'DoNotStarveTogether', 'Mods', 'dst-ai-mod'),
@@ -34,23 +34,19 @@ async function main() {
   console.log(' DST AI Player - 卸载脚本');
   console.log('═'.repeat(50));
   console.log();
-  console.log(' 警告: 此操作将删除以下内容:');
+  console.log(' 将删除以下内容:');
   console.log('   - 游戏中的 Lua Mod');
   console.log('   - 同步目录中的文件');
-  console.log('   (MCP 配置在项目中，无需手动删除)');
   console.log();
 
-  if (!skipConfirm) {
+  if (needConfirm) {
     const answer = await question(' 确认卸载？(Y/N): ');
     if (answer.toUpperCase() !== 'Y') {
       console.log(' 操作已取消');
       process.exit(0);
     }
-  } else {
-    console.log(' 跳过确认 (--yes)');
   }
 
-  console.log();
   console.log('[卸载] 正在删除...');
 
   let deletedCount = 0;
@@ -72,15 +68,11 @@ async function main() {
   }
 
   console.log();
-  console.log('═'.repeat(50));
   if (deletedCount > 0) {
-    console.log(' [完成] 卸载完成');
+    console.log('[完成] 卸载完成');
   } else {
-    console.log(' [提示] 没有找到已安装的内容');
+    console.log('[提示] 没有找到已安装的内容');
   }
-  console.log('═'.repeat(50));
-  console.log();
-  console.log(' 如需重新安装，请运行 npm run install-mod');
   console.log();
 }
 
