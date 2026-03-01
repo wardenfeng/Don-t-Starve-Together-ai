@@ -9,7 +9,10 @@
     "dev-mode": "node scripts/dev-mode.js",
     "build-mcp": "cd dst-ai-mcp-server && npm run build",
     "health-check": "node scripts/health-check.js",
-    "clean-build": "node scripts/clean-build.js"
+    "clean-build": "node scripts/clean-build.js",
+    "pack-scripts": "powershell -ExecutionPolicy Bypass -File scripts/pack-scripts.ps1",
+    "deploy-scripts": "powershell -ExecutionPolicy Bypass -File scripts/deploy-scripts.ps1",
+    "pack-and-deploy": "npm run pack-scripts && npm run deploy-scripts"
   },
   "keywords": [
     "dst",
