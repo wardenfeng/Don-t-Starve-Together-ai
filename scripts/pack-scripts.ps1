@@ -34,10 +34,14 @@ if (Test-Path $TempDir) {
 }
 New-Item -ItemType Directory -Path $TempDir | Out-Null
 
-# 复制所有 .lua 文件，保持目录结构
-Write-Host "Copying Lua files..." -ForegroundColor Gray
-Get-ChildItem -Path $SrcDir -Filter "*.lua" -Recurse | ForEach-Object {
-    $relativePath = $_.FullName.Substring($SrcDir.Length + 1)
+# 复制所有文件，保持目录结构
+Write-Host "Copying files..." -ForegroundColor Gray
+$files = Get-ChildItem -Path $SrcDir -Recurse -File
+$totalFiles = $files.Count
+$copiedFiles = 0
+
+foreach ($file in $files) {
+    $relativePath = $file.FullName.Substring($SrcDir.Length + 1)
     $destPath = Join-Path $TempDir $relativePath
     $destDir = Split-Path $destPath -Parent
 
@@ -45,22 +49,34 @@ Get-ChildItem -Path $SrcDir -Filter "*.lua" -Recurse | ForEach-Object {
         New-Item -ItemType Directory -Path $destDir | Out-Null
     }
 
-    Copy-Item $_.FullName -Destination $destPath -Force
+    Copy-Item $file.FullName -Destination $destPath -Force
+    $copiedFiles++
+
+    if ($copiedFiles % 500 -eq 0) {
+        Write-Host "  Progress: $copiedFiles / $totalFiles" -ForegroundColor Gray
+    }
 }
 
+Write-Host "  Copied $copiedFiles files" -ForegroundColor Gray
+
 # 打包
+Write-Host "Compressing..." -ForegroundColor Yellow
 Compress-Archive -Path "$TempDir\*" -DestinationPath $OutputZip -Force
 
 # 清理临时目录
 Remove-Item $TempDir -Recurse -Force
+
+# 获取文件大小
+$fileSize = (Get-Item $OutputZip).Length
+$fileSizeMB = [math]::Round($fileSize / 1MB, 2)
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Packing Complete!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Output: $OutputZip"
-Write-Host "Size: $((Get-Item $OutputZip).Length / 1KB) KB" -ForegroundColor Gray
+Write-Host "Output: $OutputZip" -ForegroundColor Green
+Write-Host "Size: $fileSizeMB MB ($copiedFiles files)" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "1. Deploy to game:"
