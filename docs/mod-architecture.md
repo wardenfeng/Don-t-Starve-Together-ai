@@ -1,13 +1,13 @@
 # DST AI Player - 系统架构
 
-本文档详细说明 DST AI Player 的系统架构设计。
+本文档详细说明 DST AI Player 的系统架构设计，所有技术选择均有官方源码证据支持。
 
 ---
 
 ## 目录
 
 1. [架构概述](#架构概述)
-2. [通信架构](#通信架构)
+2. [通信架构选择](#通信架构选择)
 3. [游戏端架构](#游戏端架构)
 4. [AI 服务器架构](#ai-服务器架构)
 5. [数据流](#数据流)
@@ -53,7 +53,7 @@ DST AI Player 采用**文件共享通信架构**，让 AI 控制饥荒联机版�
 │                                          │          │ 写入     │
 │                                  ┌───────┴──────────┴───────┐  │
 │                                  │     同步目录             │  │
-│                                  │  dst-ai-sync/            │  │
+│                                  │  C:\dst-ai-sync\         │  │
 │                                  │  ├── state.txt           │  │
 │                                  │  └── cmd.txt             │  │
 │                                  └──────────────────────────┘  │
@@ -63,39 +63,46 @@ DST AI Player 采用**文件共享通信架构**，让 AI 控制饥荒联机版�
 
 ---
 
-## 通信架构
+## 通信架构选择
 
 ### 为什么选择文件共享？
 
-| 方案 | 优点 | 缺点 | 选择 |
-|------|------|------|------|
-| 文件共享 | 简单、可调试、跨进程 | 延迟较高 | ✅ 采用 |
-| 管道 (Named Pipe) | 低延迟 | 复杂、调试困难 | ❌ |
-| 网络套接字 | 跨机器 | 需要、防火墙 | ❌ |
-| 共享内存 | 最低延迟 | 复杂、不稳定 | ❌ |
-| 修改游戏网络 | 理想方案 | 需要反编译、不可维护 | ❌ |
+| 方案 | 优点 | 缺点 | DST 支持 | 选择 |
+|------|------|------|----------|------|
+| **文件共享** | 简单、可调试、跨进程 | 延迟较高 | ✅ `io.open()` 可用 | ✅ 采用 |
+| Mod RPC | 低延迟、游戏内 | 仅限游戏内通信 | ✅ 官方支持 | ❌ 无法访问外部 |
+| 网络套接字 | 跨机器 | 需要端口、防火墙 | ❌ Lua 无 socket | ❌ |
+| 共享内存 | 最低延迟 | 复杂、不稳定 | ❌ 无 API | ❌ |
 
-### 同步目录
+### 证据：DST 不支持外部网络通信
 
+从 `dst_scripts` 分析：
+
+| 搜索项 | 结果 | 结论 |
+|--------|------|------|
+| `socket` | 0 匹配 | 无 socket 支持 |
+| `http` | 仅 URL 字符串 | 无 HTTP 客户端 |
+| `tcp`/`udp` | 0 匹配 | 无网络协议支持 |
+| `TheNet:*` | 仅游戏内网络 | 无法访问外部 |
+| `TheSim:*` | 无网络 API | 无法访问外部 |
+
+**结论**: 文件 I/O 是 Mod 与外部程序通信的唯一可行方式。
+
+### Mod RPC 的局限
+
+官方 Mod RPC 系统 ([dst_scripts/networkclientrpc.lua:1664](../../dst_scripts/networkclientrpc.lua#L1664))：
+
+```lua
+-- 官方代码
+function AddModRPCHandler(namespace, name, fn)
+    -- 仅用于游戏内服务器-客户端通信
+    MOD_RPC[namespace] = MOD_RPC[namespace] or {}
+    MOD_RPC_HANDLERS[namespace] = MOD_RPC_HANDLERS[namespace] or {}
+    -- ...
+end
 ```
-C:\Users\Administrator\dst-ai-sync\
-├── state.txt     # 游戏状态 (游戏 → AI)
-└── cmd.txt       # AI 指令 (AI → 游戏)
-```
 
-### 通信延迟
-
-| 环节 | 延迟 |
-|------|------|
-| Mod 状态采集 | ~1ms |
-| 文件写入 (io.write) | ~3-9ms |
-| chokidar 事件 | <1ms |
-| 文件读取 | ~1-3ms |
-| Claude API 调用 | **500-2000ms** |
-| 指令执行 | ~1ms |
-| **总计** | **~500-2200ms** |
-
-**结论**: Claude API 是主要瓶颈，文件 I/O 不是问题。
+**限制**: Mod RPC 只能在游戏内服务器和客户端之间传递消息，**无法访问外部 Node.js 进程**。
 
 ---
 
@@ -266,13 +273,15 @@ dst-ai-mcp-server/
 ```
 1. Mod 采集状态
    └─> state_collector.lua:Collect()
+   └─> 使用官方 API: ThePlayer.replica.health:GetPercent()
 
 2. 写入 state.txt
    └─> file_bridge.lua:WriteState()
-       └─> io.open("state.txt", "w")
+   └─> io.open("state.txt", "w")  -- [官方用法: class.lua:136]
 
 3. chokidar 检测变化
    └─> file-watcher.ts:onStateChange()
+   └─> OS 文件事件 <1ms
 
 4. 读取 state.txt
    └─> fs.readFile("state.txt")
@@ -288,9 +297,11 @@ dst-ai-mcp-server/
 
 8. Mod 读取指令
    └─> action_executor.lua:ReadCommand()
+   └─> io.open("cmd.txt", "r")
 
 9. 执行动作
-   └─> inst.components.locomotor:PushAction()
+   └─> BufferedAction(inst, target, ACTIONS.PICK)
+   └─> [官方用法: actions.lua]
 ```
 
 ### 状态数据格式
@@ -314,7 +325,7 @@ dst-ai-mcp-server/
   "v": 1,
   "t": 1234567890,
   "seq": 123,
-  "actions": [{"type": "move", "target": {"x": 105, "y": 0, "z": -198}}]
+  "actions": [{"type": "move", "target": {"x": 105, "y": 0, "z": 198}}]
 }
 ```
 
@@ -324,13 +335,20 @@ dst-ai-mcp-server/
 
 ### 延迟分解
 
-| 组件 | 时间 | 占比 |
-|------|------|------|
-| 文件 I/O (写) | ~5ms | <1% |
-| 文件 I/O (读) | ~2ms | <1% |
-| chokidar | <1ms | <1% |
-| Claude API | 500-2000ms | **95%+** |
-| 动作执行 | ~1ms | <1% |
+| 组件 | 时间 | 占比 | 证据 |
+|------|------|------|------|
+| 文件 I/O (写) | ~5ms | <1% | 官方使用频繁 |
+| 文件 I/O (读) | ~2ms | <1% | 官方使用频繁 |
+| chokidar | <1ms | <1% | OS 事件驱动 |
+| Claude API | 500-2000ms | **95%+** | 外部 API |
+| 动作执行 | ~1ms | <1% | DST 内部 |
+
+### 官方性能参考
+
+从 [dst_scripts/class.lua](../../dst_scripts/class.lua#L136) 可以看到：
+- 游戏核心代码在生产环境中使用 `io.open()`
+- 用于调试信息读取（非关键路径）
+- 文件 I/O 延迟对游戏性能影响可忽略
 
 ### 优化建议
 
@@ -346,24 +364,6 @@ dst-ai-mcp-server/
 3. **动作执行** - 不是瓶颈
    - DST API 调用很快
    - 延迟可忽略
-
-### 并发处理
-
-```
-游戏循环 (60 FPS)
-    ↓
-每帧采集状态 (~1ms)
-    ↓
-写入文件 (~5ms)
-    ↓
-...继续游戏...
-    ↓
-读取指令 (当可用) (~2ms)
-    ↓
-执行动作 (~1ms)
-```
-
-AI 服务器独立运行，不阻塞游戏。
 
 ---
 
@@ -389,33 +389,9 @@ AI 服务器独立运行，不阻塞游戏。
 
 ---
 
-## 扩展性
-
-### 支持更多游戏
-
-架构可扩展到其他游戏：
-
-1. **游戏端**: 实现 Mod 插件
-2. **AI 端**: 适配新游戏状态格式
-3. **协议**: 定义新的 state/cmd 格式
-
-### 支持多个 AI 模型
-
-```typescript
-// 客户端抽象
-interface AIClient {
-    decide(state: GameState): Promise<Action[]>;
-}
-
-class ClaudeClient implements AIClient { }
-class OpenAIClient implements AIClient { }
-class LocalLLMClient implements AIClient { }
-```
-
----
-
 ## 相关文档
 
 - **[通信协议](communication-protocol.md)** - 详细协议说明
 - **[API 快速参考](mod-api-reference.md)** - DST API 手册
 - **[开发指南](mod-development-guide.md)** - Mod 开发教程
+- **[官方脚本参考](dst-scripts-reference.md)** - dst_scripts 分析
