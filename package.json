@@ -6,7 +6,7 @@
     "preinstall-mod": "node scripts/uninstall-mod.js",
     "install-mod": "node scripts/install-mod.js",
     "setup-mcp": "node scripts/setup-mcp.js",
-    "prestart-game": "powershell -ExecutionPolicy Bypass -File scripts/prestart-game.ps1",
+    "prestart-game": "powershell -ExecutionPolicy Bypass -File scripts/stop-game.ps1",
     "start-game": "node scripts/start-game.js",
     "dev-mode": "node scripts/dev-mode.js",
     "build-mcp": "cd dst-ai-mcp-server && npm run build",
