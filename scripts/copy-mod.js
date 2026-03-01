@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const source = `C:\\Users\\Administrator\\Documents\\Klei\\DoNotStarveTogether\\Mods\\dst-ai-mod`;
+const source = `c:\\Users\\Administrator\\Desktop\\Don't Starve Together ai\\dst-ai-mod`;
 const dest = `C:\\Program Files (x86)\\Steam\\steamapps\\common\\Don't Star Together\\mods\\dst-ai-mod`;
 
 console.log('Copying from:', source);

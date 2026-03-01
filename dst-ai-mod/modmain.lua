@@ -205,40 +205,60 @@ end
 
 -- 命令处理（从文件读取）
 local CMD_FILE = "C:\\Users\\Administrator\\dst-ai-sync\\cmd.txt"
+local STATE_FILE = "C:\\Users\\Administrator\\dst-ai-sync\\state.txt"
 local lastCmdSeq = 0
 local lastCmdContent = ""
 
+-- 安全检测io是否可用（使用rawget避免沙盒错误）
+local io_module = rawget(_G, "io")
+local io_available = (io_module ~= nil and io_module.open ~= nil)
+local io_open = io_available and io_module.open or nil
+
+-- 安全的文件读取函数
+local function SafeReadFile(filepath)
+    if not io_available or not io_open then return nil end
+    local ok, file = pcall(io_open, filepath, "r")
+    if not ok or not file then return nil end
+    local content = file:read("*all")
+    file:close()
+    return content
+end
+
+-- 安全的文件写入函数
+local function SafeWriteFile(filepath, content)
+    if not io_available or not io_open then return false end
+    local ok, file = pcall(io_open, filepath, "w")
+    if not ok or not file then return false end
+    file:write(content)
+    file:close()
+    return true
+end
+
 local function ProcessCommands(inst)
-    local file = io.open(CMD_FILE, "r")
-    if file then
-        local content = file:read("*all")
-        file:close()
+    -- 客户端和服务器端都可以执行
+    local content = SafeReadFile(CMD_FILE)
+    if not content then return end
 
-        -- 只在内容变化时处理
-        if content ~= "" and content ~= lastCmdContent then
-            lastCmdContent = content
+    -- 只在内容变化时处理
+    if content ~= "" and content ~= lastCmdContent then
+        lastCmdContent = content
 
-            -- 解析JSON命令（简单正则匹配）
-            local seq = content:match('"seq"%s*:%s*(%d+)')
-            if seq then
-                seq = tonumber(seq)
-                if seq > lastCmdSeq then
-                    lastCmdSeq = seq
-                    print("[DST AI] Executing command seq: " .. seq)
+        -- 解析JSON命令（简单正则匹配）
+        local seq = content:match('"seq"%s*:%s*(%d+)')
+        if seq then
+            seq = tonumber(seq)
+            if seq > lastCmdSeq then
+                lastCmdSeq = seq
+                print("[DST AI] Executing command seq: " .. seq)
 
-                    -- 解析动作类型
-                    for actionType in content:gmatch('"type"%s*:%s*"([^"]+)"') do
-                        local action = { type = actionType }
-                        ExecuteAction(inst, action)
-                    end
-
-                    -- 清空命令文件
-                    local clearFile = io.open(CMD_FILE, "w")
-                    if clearFile then
-                        clearFile:write("")
-                        clearFile:close()
-                    end
+                -- 解析动作类型
+                for actionType in content:gmatch('"type"%s*:%s*"([^"]+)"') do
+                    local action = { type = actionType }
+                    ExecuteAction(inst, action)
                 end
+
+                -- 清空命令文件
+                SafeWriteFile(CMD_FILE, "")
             end
         end
     end
@@ -299,10 +319,11 @@ AddPlayerPostInit(function(inst)
 
         local inv_list = table.concat(inv_items, ",")
         local json = string.format(
-            'DST_AI_STATE {"v":2,"hp":%.2f,"hu":%.2f,"sa":%.2f,"x":%d,"z":%d,"day":%d,"time":%.2f,"e":[%s],"i":[%s]}',
+            '{"v":2,"hp":%.2f,"hu":%.2f,"sa":%.2f,"x":%d,"z":%d,"day":%d,"time":%.2f,"e":[%s],"i":[%s]}',
             hp, hu, sa, math.floor(pos.x), math.floor(pos.z), day, time, entity_list, inv_list
         )
-        print(json)
+        -- 写入状态文件
+        SafeWriteFile(STATE_FILE, json)
     end)
 end)
 
