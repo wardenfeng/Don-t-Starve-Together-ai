@@ -1,9 +1,9 @@
-name = 'DST AI Player'
-description = 'AI controls your DST character through MCP protocol.'
-author = 'AI Assistant'
-version = '1.0.0'
+name = "DST AI Player"
+description = "AI controls your DST character through MCP protocol."
+author = "AI Assistant"
+version = "1.0.0"
 
-forumthread = ''
+forumthread = ""
 api_version = 10
 
 dst_compatible = true
