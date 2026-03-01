@@ -61,28 +61,9 @@ console.log();
 
 // 目标路径
 const targetMod = path.join(foundPath, 'dst-ai-mod');
-const syncDir = path.join(process.env.USERPROFILE, 'dst-ai-sync');
-
-// 自动移除已安装的内容（复用 uninstall-mod 的逻辑）
-console.log('[清理] 正在移除旧版本...');
-let deletedCount = 0;
-
-if (fs.existsSync(targetMod)) {
-  fs.rmSync(targetMod, { recursive: true, force: true });
-  deletedCount++;
-}
-
-if (fs.existsSync(syncDir)) {
-  fs.rmSync(syncDir, { recursive: true, force: true });
-  deletedCount++;
-}
-
-if (deletedCount > 0) {
-  console.log(`[删除] 已移除 ${deletedCount} 项`);
-}
-console.log();
 
 // 创建同步目录
+const syncDir = path.join(process.env.USERPROFILE, 'dst-ai-sync');
 console.log('[创建] 同步目录...');
 fs.mkdirSync(syncDir, { recursive: true });
 
