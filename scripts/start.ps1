@@ -22,7 +22,7 @@ Start-Sleep -Seconds 2
 
 # Clear mod cache
 Write-Host "  Clearing cache..." -ForegroundColor Gray
-$cacheDir = "C:\Users\Administrator\Documents\Klei\DoNotStarveTogether\client_save"
+$cacheDir = Join-Path $env:USERPROFILE "Documents\Klei\DoNotStarveTogether\client_save"
 if (Test-Path "$cacheDir\modindex") { Remove-Item -Path "$cacheDir\modindex" -Recurse -Force }
 if (Test-Path "$cacheDir\modindex.lua") { Remove-Item -Path "$cacheDir\modindex.lua" -Force }
 
@@ -35,10 +35,25 @@ Start-Sleep -Seconds 1
 # Start game
 Write-Host "  Starting game..." -ForegroundColor Gray
 
-# First ensure Steam is running
+# Find Steam installation
+$steamPaths = @(
+    "${env:ProgramFiles(x86)}\Steam\steam.exe",
+    "${env:ProgramFiles}\Steam\steam.exe",
+    "$env:LOCALAPPDATA\Steam\steam.exe"
+)
+
+$steamExe = $null
+foreach ($path in $steamPaths) {
+    if (Test-Path $path) {
+        $steamExe = $path
+        break
+    }
+}
+
+# Ensure Steam is running
 $steam = Get-Process steam -ErrorAction SilentlyContinue
-if (-not $steam) {
-    Start-Process "C:\Program Files (x86)\Steam\steam.exe" -ArgumentList "-silent"
+if (-not $steam -and $steamExe) {
+    Start-Process $steamExe -ArgumentList "-silent"
     Start-Sleep -Seconds 3
 }
 
