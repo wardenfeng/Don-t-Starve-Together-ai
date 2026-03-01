@@ -6,57 +6,6 @@
 
 ## 用户命令
 
-### install-mod
-**安装 Mod 到游戏目录**
-
-```bash
-npm run install-mod
-```
-
-**执行流程：**
-1. 查找游戏安装目录 `...\Don't Starve Together\mods\`
-2. 复制 `dst-ai-mod/` 到游戏 mods 目录
-3. 创建同步目录 `~/dst-ai-sync/`
-
-**安装位置：**
-```
-C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\mods\dst-ai-mod\
-```
-
-**相关文件：**
-- `scripts/install-mod.js` - 安装逻辑
-
-**注意：**
-- 模组安装在游戏目录（与 workshop 模组相同位置）
-- 不使用 `ForceEnableMod`，需要在游戏内手动启用
-- 如需开发模式自动加载，需手动编辑 `mods\modsettings.lua`
-
----
-
-### preinstall-mod
-**卸载 Mod 并清理配置**
-
-```bash
-npm run preinstall-mod
-```
-
-**清理内容：**
-1. 游戏目录中的 `mods\dst-ai-mod\`
-2. 同步目录 `%USERPROFILE%\dst-ai-sync\`
-3. `modsettings.lua` 中的 `ForceEnableMod` 配置
-4. 所有 `modoverrides.lua` 中的模组配置
-5. `modindex` 缓存
-
-**相关文件：**
-- `scripts/uninstall-mod.js` - 卸载和清理逻辑
-
-**使用场景：**
-- 开发前清理旧版本
-- 模组出现问题需要完全重装
-- 游戏因模组配置崩溃无法启动
-
----
-
 ### setup-mcp
 **配置 MCP 服务器**
 
@@ -128,12 +77,11 @@ npm run health-check
 1. Node.js 是否安装
 2. npm 是否可用
 3. 游戏 Mods 目录是否存在
-4. Mod 是否已安装
-5. 同步目录权限
-6. MCP 服务器是否已构建
-7. MCP SDK 是否已安装
-8. MCP 配置文件
-9. 运行中的进程
+4. 同步目录权限
+5. MCP 服务器是否已构建
+6. MCP SDK 是否已安装
+7. MCP 配置文件
+8. 运行中的进程
 
 ---
 
@@ -167,7 +115,7 @@ npm run clean-build
 功能：
 - 关闭游戏进程
 - 关闭 MCP 服务器进程
-- 清理 Mod 缓存
+- 清理缓存
 
 ---
 
@@ -175,8 +123,6 @@ npm run clean-build
 
 ```
 scripts/
-├── install-mod.js      # 安装 Mod 到游戏目录
-├── uninstall-mod.js    # 卸载 Mod 并清理配置
 ├── setup-mcp.js        # 配置 MCP
 ├── start-game.js       # 启动入口
 ├── start-game.ps1      # 启动逻辑
@@ -207,41 +153,23 @@ npm 支持以下钩子，在特定命令前后自动执行：
 ### 首次安装
 ```bash
 npm run setup-mcp      # 配置 MCP
-npm run install-mod    # 安装 Mod
 npm run start-game     # 启动游戏
-# 在游戏内 Mods 菜单中启用 "DST AI Player"
 ```
 
 ### 开发循环
 ```bash
-npm run preinstall-mod # 清理旧版本
-npm run install-mod    # 安装新版本
-npm run start-game     # 启动测试
-```
-
-### 仅更新 Mod 代码
-```bash
-npm run install-mod    # 重新安装 Mod
-# 游戏已运行时，直接重启游戏即可
+npm run dev-mode       # 开启文件监听
+# 修改 src/ 中的代码会自动重新构建
 ```
 
 ---
 
-## Mod 文件要求
+## 同步目录
 
-### modinfo.lua
-- 必须使用**双引号** `"`
-- 必须使用 **CRLF** 行尾格式
-- 必须纯英文（无中文字符）
+系统使用文件共享与外部脚本通信：
 
-### modmain.lua
-- 小写文件名
-- CRLF 行尾格式
+**同步目录位置：** `%USERPROFILE%\dst-ai-sync\`
 
-### 安装验证
-安装后检查以下文件存在：
-```
-...\mods\dst-ai-mod\
-├── modinfo.lua
-└── modmain.lua
-```
+**文件：**
+- `state.txt` - 外部脚本写入的游戏状态
+- `cmd.txt` - 系统写入的动作指令

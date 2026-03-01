@@ -259,6 +259,9 @@ require("chathistory")
 require("componentutil")
 require("skins_defs_data")
 
+-- DST AI Player - AI 控制模块
+require("ai/init")
+
 if TheConfig:IsEnabled("force_netbookmode") then
 	TheSim:SetNetbookMode(true)
 end

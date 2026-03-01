@@ -10,115 +10,103 @@
 
 ---
 
-## Mod 开发文档
-
-### 核心 API 文档
+## 项目文档
 
 | 文档 | 说明 |
 |------|------|
-| **[API 快速参考](mod-api-reference.md)** | DST Mod API 速查手册（玩家/世界/实体） |
-| **[客户端 API 完全参考](client-api-reference.md)** | 客户端 vs 服务器端 API 可用性详解 |
-| **[文件 I/O 指南](client-file-io-guide.md)** | 文件读写完全指南（含 dst_scripts 源码证据） |
-
-### 开发指南
-
-| 文档 | 说明 |
-|------|------|
-| **[Mod 开发指南](mod-development-guide.md)** | Mod 开发完整教程 |
-| **[故障排除](mod-troubleshooting.md)** | 常见问题和解决方案 |
-
-### 架构和通信
-
-| 文档 | 说明 |
-|------|------|
-| **[系统架构](mod-architecture.md)** | 文件通信架构详解（含技术选择依据） |
-| **[通信协议](communication-protocol.md)** | 游戏与 AI 服务器的数据格式 |
-| **[官方脚本参考](dst-scripts-reference.md)** | dst_scripts 完全分析 |
-
-### 工具和脚本
-
-| 文档 | 说明 |
-|------|------|
+| **[通信协议](communication-protocol.md)** | 外部脚本与 AI 服务器的数据格式 |
 | **[脚本说明](scripts.md)** | 所有 npm 脚本的功能和用法 |
 
 ---
 
-## 重要提示
+## 系统架构
 
-### 客户端 Mod 文件 I/O
+DST AI Player 使用**文件共享通信架构**：
 
-| 环境 | `io` 可用性 | `ThePlayer` |
-|------|------------|-------------|
-| **客户端** | ✅ 可用 | ✅ 可用 |
-| **服务器端** | ⚠️ 需验证 | ❌ nil |
+```
+┌─────────────────┐                   ┌─────────────────┐
+│  DST 游戏进程   │                   │  Node.js MCP    │
+│  (外部脚本)     │                   │     服务器      │
+│                 │                   │                 │
+│  状态采集器     │── 写入 ────→  │   文件监听器    │
+│  动作执行器     │←── 读取 ────  │   Claude AI     │
+└─────────────────┘   state.txt    └─────────────────┘
+       ↕                                      ↕
+    %USERPROFILE%\dst-ai-sync\ (同步目录)
+```
 
-**证据来源**:
-- [dst_scripts/class.lua:136](../dst_scripts/class.lua#L136) - `io.open()` 官方使用
-- [dst_scripts/createstringspo.lua:258](../dst_scripts/createstringspo.lua#L258) - 文件写入官方使用
+### 通信流程
 
-**关键规则**: `AddPlayerPostInit` 在客户端和服务器端都会执行，必须检查环境后再使用 `io`！
+1. **游戏 → AI**: 外部脚本写入 `state.txt`
+2. **AI 服务器**: chokidar 监听到变化，读取状态
+3. **AI 处理**: 调用 Claude API 决策
+4. **AI → 游戏**: 写入 `cmd.txt`
+5. **外部脚本**: 读取并执行指令
 
-```lua
-local function IsClient()
-    return ThePlayer ~= nil or (TheNet and not TheNet:GetIsServer())
-end
+---
 
-AddPlayerPostInit(function(player)
-    if not IsClient() then return end  -- 重要！
+## 目录结构
 
-    local file = io.open("C:\\dst-ai-sync\\state.txt", "w")
-    -- ...
-end)
+```
+Don't Starve Together ai/
+├── dst-ai-mcp-server/        # MCP 服务器
+│   ├── src/
+│   │   ├── sync/             # 文件同步层
+│   │   └── tools/            # MCP 工具
+│   └── package.json
+│
+├── dst_scripts/              # DST 游戏脚本参考
+│   ├── actions.lua           # 动作定义
+│   ├── components/           # 组件脚本
+│   └── prefabs/              # 预制体脚本
+│
+├── docs/                     # 文档
+│   ├── index.md              # 文档索引
+│   ├── communication-protocol.md  # 通信协议
+│   └── scripts.md            # 脚本说明
+│
+└── scripts/                  # 工具脚本
 ```
 
 ---
 
 ## 外部资源
 
-### 官方文档
+### DST API 文档
 
 - **[DST API Docs (Fandom)](https://dst-api-docs.fandom.com/wiki/Home)** - 完整的组件列表和 API 参考
 - **[DST API Web Docs (GitHub)](https://github.com/vietnd69/dst-api-webdocs)** - 教程和示例
-- **[Klei Modding Forum](https://forums.kleientertainment.com/forums/forum/79-dont-star-together-mods-and-tools/)** - 官方 Modding 论坛
+- **[Klei Modding Forum](https://forums.kleientertainment.com/forums/forum/79-dont-star-together-mods-and-tools/)** - 官方论坛
 
 ---
 
-## 学习路径
+## 开发命令
 
-1. **系统理解**: 阅读 [CLAUDE.md](../CLAUDE.md) 了解系统架构
-2. **API 基础**: 阅读 [API 快速参考](mod-api-reference.md)
-3. **环境差异**: 阅读 [客户端 API 完全参考](client-api-reference.md)
-4. **文件操作**: 阅读 [文件 I/O 指南](client-file-io-guide.md)
-5. **官方脚本**: 阅读 [官方脚本参考](dst-scripts-reference.md)
-6. **开发实践**: 阅读 [Mod 开发指南](mod-development-guide.md)
-7. **问题解决**: 遇到问题时查看 [故障排除](mod-troubleshooting.md)
+```bash
+# 配置 MCP 服务器
+npm run setup-mcp
 
----
+# 启动游戏和 MCP 服务器
+npm run start-game
 
-## 文档结构
+# 开发模式（文件监听）
+npm run dev-mode
 
-```
-docs/
-├── index.md                      # 本文件 - 文档导航
-├── mod-api-reference.md          # API 快速参考
-├── client-api-reference.md       # 客户端 API 完全参考
-├── client-file-io-guide.md       # 文件 I/O 指南（已更新）
-├── mod-troubleshooting.md        # 故障排除
-├── mod-development-guide.md      # 开发指南
-├── communication-protocol.md     # 通信协议（已更新）
-├── mod-architecture.md           # 系统架构（已更新）
-├── dst-scripts-reference.md      # 官方脚本参考（新增）
-└── scripts.md                    # 脚本说明
+# 健康检查
+npm run health-check
+
+# 清理构建
+npm run clean-build
 ```
 
 ---
 
-## 更新日志
+## MCP 工具
 
-| 日期 | 文档 | 更新内容 |
-|------|------|----------|
-| 2025-03-01 | dst-scripts-reference.md | **新增**: 官方脚本完全分析 |
-| 2025-03-01 | client-file-io-guide.md | 更新: 添加 dst_scripts 源码证据 |
-| 2025-03-01 | mod-architecture.md | 更新: 添加通信方式选择的技术依据 |
-| 2025-03-01 | communication-protocol.md | 更新: 添加技术依据和证据链接 |
-| 2025-03-01 | 全部 | 清除推测信息，所有结论均有源码支持 |
+| 工具 | 说明 |
+|------|------|
+| `get_game_state` | 获取当前游戏状态 |
+| `send_action` | 发送动作指令到游戏 |
+| `get_ai_status` | 获取 AI 控制器状态 |
+| `enable_ai` | 启用 AI 自动模式 |
+| `disable_ai` | 禁用 AI 自动模式 |

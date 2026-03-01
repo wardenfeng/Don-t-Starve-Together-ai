@@ -55,7 +55,7 @@ if (npmVersion) {
 console.log();
 
 // 3. 检查游戏目录
-console.log('[3/8] 检查游戏 Mod 目录...');
+console.log('[3/8] 检查游戏目录...');
 const modPaths = [
   path.join(process.env.USERPROFILE, 'Documents', 'Klei', 'DoNotStarveTogether', 'Mods'),
   'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Don\'t Starve Together\\mods',
@@ -68,18 +68,11 @@ for (const modPath of modPaths) {
   if (fs.existsSync(modPath)) {
     log(true, `找到游戏目录: ${modPath}`);
     gameFound = true;
-
-    const aiModPath = path.join(modPath, 'dst-ai-mod');
-    if (fs.existsSync(path.join(aiModPath, 'modinfo.lua'))) {
-      log(true, 'Lua Mod 已安装');
-    } else {
-      logInfo('Lua Mod 未安装 (运行 npm run install)');
-    }
     break;
   }
 }
 if (!gameFound) {
-  log(false, '未找到游戏目录');
+  logInfo('未找到游戏目录 (可选，用于外部脚本)');
 }
 console.log();
 
