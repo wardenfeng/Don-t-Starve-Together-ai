@@ -25,8 +25,10 @@ function getEnv(): {
   stateCacheTtl: number;
   commandSequenceStart: number;
 } {
+  // 使用游戏安装目录的 databundles 文件夹
+  const gameDir = process.env.DST_GAME_DIR || "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Don't Starve Together";
   return {
-    syncDir: process.env.SYNC_DIR || `${process.env.USERPROFILE || process.env.HOME || "."}\\dst-ai-sync\\`,
+    syncDir: process.env.SYNC_DIR || `${gameDir}\\data\\databundles\\`,
     stateCacheTtl: parseInt(process.env.STATE_CACHE_TTL || "5000"),
     commandSequenceStart: parseInt(process.env.COMMAND_SEQUENCE_START || "1"),
   };
