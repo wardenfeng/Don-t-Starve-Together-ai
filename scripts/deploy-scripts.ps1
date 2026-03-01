@@ -22,7 +22,7 @@ function Load-EnvFile {
 Load-EnvFile
 
 $ProjectDir = "C:\Users\Administrator\Desktop\Don't Starve Together ai"
-$SourceZip = "$ProjectDir\scripts.zip"
+$SourceZip = "$ProjectDir\dst_databundles\scripts.zip"
 
 # 从环境变量或配置读取游戏目录
 $GameDir = if ($env:DST_GAME_DIR) { $env:DST_GAME_DIR } else { "C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together" }
