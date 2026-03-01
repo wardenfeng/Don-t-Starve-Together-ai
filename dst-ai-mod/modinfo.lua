@@ -1,5 +1,5 @@
-name = "DST AI Player (MCP)"
-description = "让AI通过MCP协议自动玩饥荒联机版。监听文件变化，通过MCP工具与大模型通信。"
+name = "DST AI Player"
+description = "AI controls your DST character through MCP protocol."
 author = "AI Assistant"
 version = "1.0.0"
 
@@ -15,57 +15,54 @@ client_only_mod = false
 
 server_filter_tags = {"character", "utility"}
 
-icon_atlas = "modicon.xml"
-icon = "modicon.tex"
-
 configuration_options =
 {
     {
         name = "sync_dir",
-        label = "同步目录",
-        hover = "与MCP服务器通信的文件同步目录",
+        label = "Sync Directory",
+        hover = "Directory for MCP server communication",
         options =
         {
-            {description = "%USERPROFILE%\\dst-ai-sync\\", data = "%USERPROFILE%\\dst-ai-sync\\"},
+            {description = "Default", data = "%USERPROFILE%\\dst-ai-sync\\"},
         },
         default = "%USERPROFILE%\\dst-ai-sync\\",
     },
     {
         name = "update_interval",
-        label = "更新间隔(帧)",
-        hover = "状态采集和命令检查的间隔帧数",
+        label = "Update Interval (frames)",
+        hover = "State collection and command check interval",
         options =
         {
-            {description = "1帧 (最快)", data = 1},
-            {description = "5帧", data = 5},
-            {description = "10帧 (推荐)", data = 10},
-            {description = "20帧", data = 20},
+            {description = "1 frame (fastest)", data = 1},
+            {description = "5 frames", data = 5},
+            {description = "10 frames (recommended)", data = 10},
+            {description = "20 frames", data = 20},
         },
         default = 10,
     },
     {
         name = "scan_radius",
-        label = "扫描半径",
-        hover = "采集周围实体的扫描范围",
+        label = "Scan Radius",
+        hover = "Entity collection range",
         options =
         {
-            {description = "10单位", data = 10},
-            {description = "15单位", data = 15},
-            {description = "20单位 (推荐)", data = 20},
-            {description = "30单位", data = 30},
+            {description = "10 units", data = 10},
+            {description = "15 units", data = 15},
+            {description = "20 units (recommended)", data = 20},
+            {description = "30 units", data = 30},
         },
         default = 20,
     },
     {
         name = "max_entities",
-        label = "最大实体数",
-        hover = "最多采集的周围实体数量",
+        label = "Max Entities",
+        hover = "Maximum number of entities to collect",
         options =
         {
-            {description = "10个", data = 10},
-            {description = "15个 (推荐)", data = 15},
-            {description = "20个", data = 20},
-            {description = "30个", data = 30},
+            {description = "10", data = 10},
+            {description = "15 (recommended)", data = 15},
+            {description = "20", data = 20},
+            {description = "30", data = 30},
         },
         default = 15,
     },
