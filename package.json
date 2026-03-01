@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "AI-powered Don't Starve Together player using MCP protocol",
   "scripts": {
-    "install": "node scripts/install.js",
-    "setup": "node scripts/setup.js",
-    "start": "node scripts/start.js",
-    "dev": "node scripts/dev.js",
-    "build": "cd dst-ai-mcp-server && npm run build",
-    "check": "node scripts/health-check.js",
-    "clean": "node scripts/clean.js",
-    "uninstall": "node scripts/uninstall.js"
+    "install-mod": "node scripts/install-mod.js",
+    "setup-mcp": "node scripts/setup-mcp.js",
+    "start-game": "node scripts/start-game.js",
+    "dev-mode": "node scripts/dev-mode.js",
+    "build-mcp": "cd dst-ai-mcp-server && npm run build",
+    "health-check": "node scripts/health-check.js",
+    "clean-build": "node scripts/clean-build.js",
+    "uninstall-mod": "node scripts/uninstall-mod.js"
   },
   "keywords": [
     "dst",

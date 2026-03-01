@@ -3,7 +3,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-const ps1File = path.join(__dirname, 'start.ps1');
+const ps1File = path.join(__dirname, 'start-game.ps1');
 
 execSync(`powershell -ExecutionPolicy Bypass -File "${ps1File}"`, {
   stdio: 'inherit',
