@@ -6,7 +6,6 @@ $ErrorActionPreference = "Stop"
 $ProjectDir = "C:\Users\Administrator\Desktop\Don't Starve Together ai"
 $SrcDir = "$ProjectDir\dst_scripts"
 $OutputZip = "$ProjectDir\scripts.zip"
-$GameScriptsZip = "C:\Program Files (x86)\Steam\steamapps\common\Don't Starve Together\scripts\scripts.zip"
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  DST Scripts Packager" -ForegroundColor Cyan
@@ -61,16 +60,12 @@ Write-Host "  Packing Complete!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Output: $OutputZip"
+Write-Host "Size: $((Get-Item $OutputZip).Length / 1KB) KB" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
-Write-Host "1. Backup the original scripts.zip:"
-Write-Host "   Copy-Item `"$GameScriptsZip`" `"$GameScriptsZip.bak`""
+Write-Host "1. Deploy to game:"
+Write-Host "   npm run deploy-scripts"
 Write-Host ""
-Write-Host "2. Replace game scripts.zip:"
-Write-Host "   Copy-Item `"$OutputZip`" `"$GameScriptsZip`" -Force"
-Write-Host ""
-Write-Host "3. Start the game and use console commands:"
-Write-Host "   ai_help()     - Show all commands"
-Write-Host "   ai_enable()   - Enable AI control"
-Write-Host "   ai_status()   - Show AI status"
+Write-Host "2. Or pack and deploy in one command:"
+Write-Host "   npm run pack-and-deploy"
 Write-Host ""

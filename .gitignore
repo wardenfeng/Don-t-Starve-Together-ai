@@ -10,7 +10,6 @@ node_modules/
 npm-debug.log*
 
 # 环境变量
-.env
 .env.local
 
 # 系统文件
@@ -37,3 +36,4 @@ coverage/
 # 临时文件
 *.tmp
 .temp/
+scripts.zip
