@@ -7,9 +7,8 @@ const path = require('path');
 const rootDir = path.join(__dirname, '..');
 const sourceModDir = path.join(rootDir, 'dst-ai-mod');
 
-// 用户目录优先（正常模组安装方式）
+// 游戏目录优先（与 workshop 模组相同位置）
 const modPaths = [
-  path.join(process.env.USERPROFILE, 'Documents', 'Klei', 'DoNotStarveTogether', 'Mods'),
   'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Don\'t Starve Together\\mods',
   'D:\\SteamLibrary\\steamapps\\common\\Don\'t Starve Together\\mods',
   'E:\\SteamLibrary\\steamapps\\common\\Don\'t Starve Together\\mods',
