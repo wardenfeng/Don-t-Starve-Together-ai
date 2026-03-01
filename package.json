@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "description": "AI-powered Don't Starve Together player using MCP protocol",
   "scripts": {
-    "preinstall-mod": "node scripts/uninstall-mod.js",
-    "install-mod": "node scripts/install-mod.js",
     "setup-mcp": "node scripts/setup-mcp.js",
     "prestart-game": "powershell -ExecutionPolicy Bypass -File scripts/stop-game.ps1",
     "start-game": "node scripts/start-game.js",
