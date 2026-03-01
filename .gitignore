@@ -37,3 +37,4 @@ coverage/
 *.tmp
 .temp/
 scripts.zip
+temp_scripts

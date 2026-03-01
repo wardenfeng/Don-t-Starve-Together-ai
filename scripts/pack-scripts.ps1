@@ -1,5 +1,5 @@
 # DST Scripts 打包脚本
-# 将修改后的 dst_scripts 打包成 scripts.zip
+# 将 dst_scripts 直接打包成 scripts.zip
 
 $ErrorActionPreference = "Stop"
 
@@ -21,50 +21,19 @@ if (-not (Test-Path $SrcDir)) {
 # 删除旧的 zip 文件
 if (Test-Path $OutputZip) {
     Remove-Item $OutputZip -Force
-    Write-Host "Removed old scripts.zip" -ForegroundColor Yellow
 }
 
-# 使用 Compress-Archive 打包 (PowerShell 5.0+)
-Write-Host "Packing scripts..." -ForegroundColor Yellow
+# 检查是否有 7zip 可用
+$use7zip = Get-Command "7z" -ErrorAction SilentlyContinue
 
-# 创建临时目录结构
-$TempDir = "$ProjectDir\temp_scripts"
-if (Test-Path $TempDir) {
-    Remove-Item $TempDir -Recurse -Force
+if ($use7zip) {
+    Write-Host "Using 7-Zip..." -ForegroundColor Yellow
+    & 7z a -tzip $OutputZip "$SrcDir\*" -mx5 > $null
+} else {
+    # 使用 PowerShell Compress-Archive
+    Write-Host "Using PowerShell Compress-Archive..." -ForegroundColor Yellow
+    Compress-Archive -Path "$SrcDir\*" -DestinationPath $OutputZip -Force
 }
-New-Item -ItemType Directory -Path $TempDir | Out-Null
-
-# 复制所有文件，保持目录结构
-Write-Host "Copying files..." -ForegroundColor Gray
-$files = Get-ChildItem -Path $SrcDir -Recurse -File
-$totalFiles = $files.Count
-$copiedFiles = 0
-
-foreach ($file in $files) {
-    $relativePath = $file.FullName.Substring($SrcDir.Length + 1)
-    $destPath = Join-Path $TempDir $relativePath
-    $destDir = Split-Path $destPath -Parent
-
-    if (-not (Test-Path $destDir)) {
-        New-Item -ItemType Directory -Path $destDir | Out-Null
-    }
-
-    Copy-Item $file.FullName -Destination $destPath -Force
-    $copiedFiles++
-
-    if ($copiedFiles % 500 -eq 0) {
-        Write-Host "  Progress: $copiedFiles / $totalFiles" -ForegroundColor Gray
-    }
-}
-
-Write-Host "  Copied $copiedFiles files" -ForegroundColor Gray
-
-# 打包
-Write-Host "Compressing..." -ForegroundColor Yellow
-Compress-Archive -Path "$TempDir\*" -DestinationPath $OutputZip -Force
-
-# 清理临时目录
-Remove-Item $TempDir -Recurse -Force
 
 # 获取文件大小
 $fileSize = (Get-Item $OutputZip).Length
@@ -76,7 +45,7 @@ Write-Host "  Packing Complete!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Output: $OutputZip" -ForegroundColor Green
-Write-Host "Size: $fileSizeMB MB ($copiedFiles files)" -ForegroundColor Gray
+Write-Host "Size: $fileSizeMB MB" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "1. Deploy to game:"
