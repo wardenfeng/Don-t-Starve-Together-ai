@@ -61,26 +61,32 @@ console.log();
 
 // 目标路径
 const targetMod = path.join(foundPath, 'dst-ai-mod');
+const syncDir = path.join(process.env.USERPROFILE, 'dst-ai-sync');
 
-// 检查是否已安装
+// 自动移除已安装的内容（复用 uninstall-mod 的逻辑）
+console.log('[清理] 正在移除旧版本...');
+let deletedCount = 0;
+
 if (fs.existsSync(targetMod)) {
-  console.log('[提示] 检测到已安装的版本');
-  // 可以选择覆盖或跳过
   fs.rmSync(targetMod, { recursive: true, force: true });
-  console.log('[删除] 旧版本已移除');
+  deletedCount++;
 }
+
+if (fs.existsSync(syncDir)) {
+  fs.rmSync(syncDir, { recursive: true, force: true });
+  deletedCount++;
+}
+
+if (deletedCount > 0) {
+  console.log(`[删除] 已移除 ${deletedCount} 项`);
+}
+console.log();
 
 // 创建同步目录
-const syncDir = path.join(process.env.USERPROFILE, 'dst-ai-sync');
-if (!fs.existsSync(syncDir)) {
-  console.log(`[创建] 同步目录: ${syncDir}`);
-  fs.mkdirSync(syncDir, { recursive: true });
-} else {
-  console.log('[提示] 同步目录已存在');
-}
+console.log('[创建] 同步目录...');
+fs.mkdirSync(syncDir, { recursive: true });
 
 // 复制Mod文件
-console.log();
 console.log('[安装] 正在复制Mod文件...');
 copyRecursiveSync(sourceModDir, targetMod);
 
@@ -91,10 +97,4 @@ console.log('═'.repeat(50));
 console.log();
 console.log(` 安装位置: ${targetMod}`);
 console.log(` 同步目录: ${syncDir}`);
-console.log();
-console.log(' 下一步:');
-console.log(' 1. 运行 npm run setup 配置 MCP 服务器');
-console.log(' 2. 启动饥荒联机版');
-console.log(' 3. 在设置中启用 "DST AI Player (MCP)" Mod');
-console.log(' 4. 游戏内输入 ai_enable()');
 console.log();
