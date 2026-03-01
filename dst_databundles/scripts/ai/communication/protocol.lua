@@ -3,6 +3,13 @@
 
 local PROTOCOL = {}
 
+-- 辅助函数：trim 字符串 (DST Lua 没有原生 trim)
+local function trim(s)
+    if type(s) ~= "string" then return s end
+    return s:gsub("^%s*(.-)%s*$", "%1")
+end
+PROTOCOL.trim = trim
+
 -- 协议版本
 PROTOCOL.VERSION = 1
 
@@ -42,12 +49,20 @@ PROTOCOL.EQUIP_SLOTS = {
     BODY = "body"
 }
 
--- DST EQUIPSLOTS 常量映射
-PROTOCOL.DST_EQUIPSLOTS = {
-    [PROTOCOL.EQUIP_SLOTS.HANDS] = EQUIPSLOTS.HANDS or 1,
-    [PROTOCOL.EQUIP_SLOTS.HEAD] = EQUIPSLOTS.HEAD or 2,
-    [PROTOCOL.EQUIP_SLOTS.BODY] = EQUIPSLOTS.BODY or 3
-}
+-- DST EQUIPSLOTS 常量映射 (延迟加载，因为 EQUIPSLOTS 在模块加载时可能不存在)
+function PROTOCOL.GetDSTEquipSlot(slot_name)
+    if not EQUIPSLOTS then
+        return 1
+    end
+    if slot_name == PROTOCOL.EQUIP_SLOTS.HANDS then
+        return EQUIPSLOTS.HANDS or 1
+    elseif slot_name == PROTOCOL.EQUIP_SLOTS.HEAD then
+        return EQUIPSLOTS.HEAD or 2
+    elseif slot_name == PROTOCOL.EQUIP_SLOTS.BODY then
+        return EQUIPSLOTS.BODY or 3
+    end
+    return 1
+end
 
 -- 控制命令
 PROTOCOL.CONTROL_COMMANDS = {

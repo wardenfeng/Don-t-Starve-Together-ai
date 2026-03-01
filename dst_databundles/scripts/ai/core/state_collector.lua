@@ -8,7 +8,7 @@ local StateCollector = Class(function(self, inst)
     self.inst = inst
     self.scan_radius = PROTOCOL.SCAN_RADIUS
     self.max_entities = PROTOCOL.MAX_ENTITIES
-end)
+end
 
 -- 采集完整游戏状态
 function StateCollector:CollectState()
@@ -56,7 +56,7 @@ function StateCollector:CollectState()
     state.i = self:CollectInventory(player)
 
     return state
-end)
+end
 
 -- 采集玩家状态
 function StateCollector:CollectPlayerState(player)
@@ -87,7 +87,7 @@ function StateCollector:CollectPlayerState(player)
         x = pos.x or 0,
         z = pos.z or 0
     }
-end)
+end
 
 -- 采集世界状态
 function StateCollector:CollectWorldState()
@@ -106,7 +106,7 @@ function StateCollector:CollectWorldState()
         isNight = state.isnight or false,
         moonphase = state.moonphase or "new"
     }
-end)
+end
 
 -- 采集附近实体
 function StateCollector:CollectNearbyEntities(player)
@@ -152,10 +152,10 @@ function StateCollector:CollectNearbyEntities(player)
     -- 按距离排序
     table.sort(entities, function(a, b)
         return (a.d or 0) < (b.d or 0)
-    end)
+    end
 
     return entities
-end)
+end
 
 -- 采集单个实体信息
 function StateCollector:CollectEntityInfo(ent, dist, player_pos)
@@ -205,7 +205,7 @@ function StateCollector:CollectEntityInfo(ent, dist, player_pos)
         d = math.floor(dist * 10) / 10,
         notes = table.concat(notes, ",")
     }
-end)
+end
 
 -- 采集背包物品
 function StateCollector:CollectInventory(player)
@@ -218,7 +218,7 @@ function StateCollector:CollectInventory(player)
     -- 获取所有物品槽
     local all_items = player.components.inventory:FindItems(function(item)
         return item ~= nil and item:IsValid()
-    end)
+    end
 
     -- 统计物品数量
     local item_counts = {}
@@ -254,7 +254,7 @@ function StateCollector:CollectInventory(player)
     end
 
     return items
-end)
+end
 
 -- 获取玩家当前位置
 function StateCollector:GetPlayerPosition()
@@ -264,7 +264,7 @@ function StateCollector:GetPlayerPosition()
 
     local pos = self.inst:GetPosition()
     return { x = pos.x, y = pos.y, z = pos.z }
-end)
+end
 
 -- 获取玩家健康状态
 function StateCollector:GetPlayerHealth()

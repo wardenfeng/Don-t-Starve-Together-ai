@@ -34,7 +34,7 @@ local AIController = Class(function(self, inst, config)
     self.last_state_output = 0
 
     PROTOCOL.log("AI Controller initialized")
-end)
+end
 
 -- 启用 AI 控制器
 function AIController:Enable()
@@ -50,7 +50,7 @@ function AIController:Enable()
 
     -- 立即输出一次状态
     self:OutputState()
-end)
+end
 
 -- 禁用 AI 控制器
 function AIController:Disable()
@@ -66,12 +66,12 @@ function AIController:Disable()
     end
 
     PROTOCOL.log("AI Controller disabled")
-end)
+end
 
 -- 检查是否启用
 function AIController:IsEnabled()
     return self.enabled
-end)
+end
 
 -- 游戏更新回调
 function AIController:OnUpdate(dt)
@@ -114,7 +114,7 @@ function AIController:OnUpdate(dt)
     if self.frame_count % 60 == 0 then  -- 每秒一次
         self:WriteStats()
     end
-end)
+end
 
 -- AI 主循环
 function AIController:AICycle()
@@ -133,7 +133,7 @@ function AIController:AICycle()
         -- 清空命令文件
         self.file_bridge:ClearCommand()
     end
-end)
+end
 
 -- 执行单个动作
 function AIController:ExecuteAction(action)
@@ -146,7 +146,7 @@ function AIController:ExecuteAction(action)
     end
 
     return success
-end)
+end
 
 -- 输出状态到日志
 function AIController:OutputState()
@@ -163,7 +163,7 @@ function AIController:OutputState()
     print("[DST_AI_STATE] " .. json_str)
 
     self.stats.last_state_time = GetTime() or 0
-end)
+end
 
 -- 写入统计信息
 function AIController:WriteStats()
@@ -176,7 +176,7 @@ function AIController:WriteStats()
     }
 
     self.file_bridge:WriteStats(self.enabled, stats)
-end)
+end
 
 -- 获取统计信息
 function AIController:GetStats()
@@ -191,12 +191,12 @@ function AIController:GetStats()
         errors = self.stats.errors,
         action_stats = action_stats
     }
-end)
+end
 
 -- 手动触发状态输出
 function AIController:ForceOutputState()
     self:OutputState()
-end)
+end
 
 -- 手动执行动作
 function AIController:ExecuteActionString(action_str)
@@ -208,23 +208,23 @@ function AIController:ExecuteActionString(action_str)
     end
 
     return false
-end)
+end
 
 -- 获取当前状态
 function AIController:GetCurrentState()
     return self.state_collector:CollectState()
-end)
+end
 
 -- 设置更新间隔
 function AIController:SetUpdateInterval(interval)
     self.update_interval = interval or PROTOCOL.UPDATE_INTERVAL
     PROTOCOL.log("Update interval set to " .. self.update_interval .. " frames")
-end)
+end
 
 -- 获取玩家位置
 function AIController:GetPlayerPosition()
     return self.state_collector:GetPlayerPosition()
-end)
+end
 
 -- 查找附近实体
 function AIController:FindNearbyEntities(radius)
@@ -251,6 +251,6 @@ function AIController:FindNearbyEntities(radius)
     end
 
     return result
-end)
+end
 
 return AIController

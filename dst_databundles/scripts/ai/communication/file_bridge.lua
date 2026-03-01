@@ -17,12 +17,12 @@ local FileBridge = Class(function(self, inst)
     }
 
     PROTOCOL.log("FileBridge initialized with sync dir: " .. self.sync_dir)
-end)
+end
 
 -- 检查连接状态 (读取 status.txt)
 function FileBridge:CheckConnection()
     local content = self:ReadFile(PROTOCOL.FILES.STATUS_IN)
-    if content and content:trim() == PROTOCOL.CONNECTION_STATUS.CONNECTED then
+    if content and PROTOCOL.trim(content) == PROTOCOL.CONNECTION_STATUS.CONNECTED then
         if not self.connected then
             PROTOCOL.log("Connected to MCP server")
         end
@@ -89,7 +89,7 @@ function FileBridge:ReadCommand()
     end
 
     local content = self:ReadFile(PROTOCOL.FILES.CMD_IN)
-    if not content or content:trim() == "" then
+    if not content or PROTOCOL.trim(content) == "" then
         return nil
     end
 
@@ -138,7 +138,7 @@ function FileBridge:ReadControl()
         return nil
     end
 
-    local cmd = content:trim():upper()
+    local cmd = PROTOCOL.trim(content):upper()
     if cmd == PROTOCOL.CONTROL_COMMANDS.ENABLE then
         PROTOCOL.log("Received ENABLE command")
         return "ENABLE"

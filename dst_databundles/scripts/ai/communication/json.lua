@@ -3,6 +3,9 @@
 
 local Json = {}
 
+-- 协议版本常量 (避免循环依赖)
+local PROTOCOL_VERSION = 1
+
 -- 字符转义
 local function escape_char(c)
     local escapes = {
@@ -196,7 +199,7 @@ end
 -- 格式化状态为协议格式 (缩写字段)
 function Json.encode_state(state)
     local obj = {
-        v = state.v or PROTOCOL.VERSION,
+        v = state.v or PROTOCOL_VERSION,
         hp = state.hp or 1,
         hu = state.hu or 1,
         sa = state.sa or 1,

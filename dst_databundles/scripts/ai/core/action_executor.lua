@@ -15,7 +15,7 @@ local ActionExecutor = Class(function(self, inst)
         failed = 0,
         by_type = {}
     }
-end)
+end
 
 -- 执行动作
 function ActionExecutor:Execute(action)
@@ -55,7 +55,7 @@ function ActionExecutor:Execute(action)
         self.stats.failed = self.stats.failed + 1
         return false
     end
-end)
+end
 
 -- ========== 动作实现函数 ==========
 
@@ -73,7 +73,7 @@ function ActionExecutor:Execute_move(action)
     end
 
     return false
-end)
+end
 
 -- 拾取物品
 function ActionExecutor:Execute_pickup(action)
@@ -96,7 +96,7 @@ function ActionExecutor:Execute_pickup(action)
     end
 
     return false
-end)
+end
 
 -- 砍伐
 function ActionExecutor:Execute_chop(action)
@@ -116,7 +116,7 @@ function ActionExecutor:Execute_chop(action)
     local chop_action = BufferedAction(self.inst, entity, ACTIONS.CHOP)
     self.inst.components.locomotor:PushAction(chop_action, true)
     return true
-end)
+end
 
 -- 挖矿
 function ActionExecutor:Execute_mine(action)
@@ -136,7 +136,7 @@ function ActionExecutor:Execute_mine(action)
     local mine_action = BufferedAction(self.inst, entity, ACTIONS.MINE)
     self.inst.components.locomotor:PushAction(mine_action, true)
     return true
-end)
+end
 
 -- 挖掘
 function ActionExecutor:Execute_dig(action)
@@ -156,7 +156,7 @@ function ActionExecutor:Execute_dig(action)
     local dig_action = BufferedAction(self.inst, entity, ACTIONS.DIG)
     self.inst.components.locomotor:PushAction(dig_action, true)
     return true
-end)
+end
 
 -- 攻击
 function ActionExecutor:Execute_attack(action)
@@ -175,7 +175,7 @@ function ActionExecutor:Execute_attack(action)
     local attack_action = BufferedAction(self.inst, entity, ACTIONS.ATTACK)
     self.inst.components.locomotor:PushAction(attack_action, true)
     return true
-end)
+end
 
 -- 进食
 function ActionExecutor:Execute_eat(action)
@@ -208,7 +208,7 @@ function ActionExecutor:Execute_eat(action)
     end
 
     return false
-end)
+end
 
 -- 装备物品
 function ActionExecutor:Execute_equip(action)
@@ -227,10 +227,7 @@ function ActionExecutor:Execute_equip(action)
     end
 
     -- 获取装备槽位
-    local equip_slot = PROTOCOL.DST_EQUIPSLOTS[slot]
-    if not equip_slot then
-        equip_slot = EQUIPSLOTS.HANDS
-    end
+    local equip_slot = PROTOCOL.GetDSTEquipSlot(slot)
 
     -- 装备物品
     if self.inst.components.inventory then
@@ -243,16 +240,12 @@ function ActionExecutor:Execute_equip(action)
     end
 
     return false
-end)
+end
 
 -- 卸下装备
 function ActionExecutor:Execute_unequip(action)
     local slot = action.slot or "hands"
-    local equip_slot = PROTOCOL.DST_EQUIPSLOTS[slot]
-
-    if not equip_slot then
-        equip_slot = EQUIPSLOTS.HANDS
-    end
+    local equip_slot = PROTOCOL.GetDSTEquipSlot(slot)
 
     if self.inst.components.inventory then
         local item = self.inst.components.inventory:GetEquippedItem(equip_slot)
@@ -263,7 +256,7 @@ function ActionExecutor:Execute_unequip(action)
     end
 
     return false
-end)
+end
 
 -- 制作物品
 function ActionExecutor:Execute_craft(action)
@@ -299,7 +292,7 @@ function ActionExecutor:Execute_craft(action)
     end
 
     return false
-end)
+end
 
 -- 放置建筑
 function ActionExecutor:Execute_build(action)
@@ -335,7 +328,7 @@ function ActionExecutor:Execute_build(action)
     end
 
     return false
-end)
+end
 
 -- 等待
 function ActionExecutor:Execute_wait(action)
@@ -344,10 +337,10 @@ function ActionExecutor:Execute_wait(action)
     -- 使用定时器等待
     self.inst:DoTaskInTime(duration, function()
         PROTOCOL.log("Wait completed")
-    end)
+    end
 
     return true
-end)
+end
 
 -- 跟随实体
 function ActionExecutor:Execute_follow(action)
@@ -368,7 +361,7 @@ function ActionExecutor:Execute_follow(action)
     end
 
     return false
-end)
+end
 
 -- 复活
 function ActionExecutor:Execute_revive(action)
@@ -399,7 +392,7 @@ function ActionExecutor:Execute_revive(action)
     end
 
     return false
-end)
+end
 
 -- ========== 辅助函数 ==========
 
@@ -449,7 +442,7 @@ function ActionExecutor:FindEntityByRef(entity_ref, position, tag)
     end
 
     return nil
-end)
+end
 
 -- 查找最近的带标签实体
 function ActionExecutor:FindNearestEntityWithTag(tag, radius)
@@ -461,7 +454,7 @@ function ActionExecutor:FindNearestEntityWithTag(tag, radius)
     end
 
     return nil
-end)
+end
 
 -- 检查是否有工具
 function ActionExecutor:HasToolForAction(action)
@@ -485,7 +478,7 @@ function ActionExecutor:HasToolForAction(action)
     -- 检查背包中是否有工具
     local tool_item = self:FindItemInInventory(tool)
     return tool_item ~= nil
-end)
+end
 
 -- 在背包中查找物品
 function ActionExecutor:FindItemInInventory(item_name)
@@ -497,14 +490,14 @@ function ActionExecutor:FindItemInInventory(item_name)
 
     local items = self.inst.components.inventory:FindItems(function(item)
         return item.prefab == target_name
-    end)
+    end
 
     if #items > 0 then
         return items[1]
     end
 
     return nil
-end)
+end
 
 -- 查找可吃的食物
 function ActionExecutor:FindEdibleItem()
@@ -514,14 +507,14 @@ function ActionExecutor:FindEdibleItem()
 
     local food_items = self.inst.components.inventory:FindItems(function(item)
         return item.components.editable ~= nil or item.components.edible ~= nil
-    end)
+    end
 
     if #food_items > 0 then
         return food_items[1].prefab
     end
 
     return nil
-end)
+end
 
 -- 获取统计信息
 function ActionExecutor:GetStats()
@@ -530,6 +523,6 @@ function ActionExecutor:GetStats()
         failed = self.stats.failed,
         by_type = self.stats.by_type
     }
-end)
+end
 
 return ActionExecutor
