@@ -25,5 +25,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "archiver": "^7.0.1"
   }
 }
